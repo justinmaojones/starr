@@ -34,11 +34,12 @@ class PrefixSumTree(np.ndarray):
             self._flat_base = array.view(np.ndarray).ravel()
             self._indices = np.arange(array.size, dtype=np.int32).reshape(array.shape)
             self._sumtree = np.zeros_like(self._flat_base)
-        
-    def __array_wrap__(self, out_arr, context=None):
+
+    def __array_prepare__(self, out_arr, context=None):
         # any op that transforms the array, other than setting values, 
-        # should return an ndarray
-        return super(PrefixSumTree, self).__array_wrap__(out_arr, context).view(np.ndarray)
+        # should return an ndarray copy
+        return super(PrefixSumTree, self).__array_prepare__(out_arr.view(np.ndarray).copy(), context)
+
     
     def __setitem__(self,idx,val):
         indices = np.ascontiguousarray(self._indices[idx]).ravel()

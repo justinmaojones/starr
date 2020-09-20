@@ -88,19 +88,21 @@ class TestPrefixSumTree(unittest.TestCase):
         # when a transformation is applied to a PrefixSumTree object, it is assumed that
         # we do not want a new PrefixSumTree object (which could result in a large
         # number of unwanted prefix sum tree updates)...and thus the transformation
-        # is applied to the underlying array object
+        # is applied to the underlying array object, and an NDArray is returned
         self.assertTrue(isinstance(x2,np.ndarray))
+
         # underlying x and sumtree is unchanged
         self.assertEqual(x2[0],1)
         self.assertEqual(x[0],0)
         self.assertEqual(x._sumtree[1],6)
-        # ditto for +=
+
+        # ditto for in-place assignment operators
         x3 = x
         x3 += 10
         self.assertTrue(isinstance(x,PrefixSumTree))
         self.assertTrue(isinstance(x3,np.ndarray))
         self.assertEqual(x3[0],10)
-        self.assertEqual(x[0],10)
+        self.assertEqual(x[0],0)
         self.assertEqual(x._sumtree[1],6)
 
 
