@@ -14,18 +14,18 @@ def update_prefix_sum_tree(
             ARRAY_TYPE[:] array,
             ARRAY_TYPE[:] sumtree):
 
-    assert idxs.shape[0] == vals.shape[0]
     assert array.shape[0] == sumtree.shape[0]
 
     cdef int i # index of idxs and vals
     cdef INDEX_TYPE idx # index of array and sumtree
     cdef INDEX_TYPE n = <INDEX_TYPE>array.shape[0] # size of array and sumtree
+    cdef INDEX_TYPE nv = <INDEX_TYPE>vals.shape[0] # size of vals 
     cdef ARRAY_TYPE diff 
 
     for i in range(idxs.shape[0]):
         # assumes array and sumtree are the same size, where sumtree is a prefix sum tree of array
         idx = idxs[i]
-        diff = vals[i] - array[idx]
+        diff = vals[i % nv] - array[idx]
         array[idx] += diff
         idx = (idx + n) / 2 # index of parent in sumtree
         while idx > 0:
