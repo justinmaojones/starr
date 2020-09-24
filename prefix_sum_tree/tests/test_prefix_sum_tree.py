@@ -62,6 +62,16 @@ class TestPrefixSumTree(unittest.TestCase):
         self.assertEqual(prefix_sum_tree[1],1)
         self.assertEqual(prefix_sum_tree.dtype,np.dtype("int64"))
 
+    def test_invalid_array_creation(self):
+        with self.assertRaises(ValueError):
+            PrefixSumTree(0)
+        with self.assertRaises(ValueError):
+            PrefixSumTree(1)
+        with self.assertRaises(ValueError):
+            PrefixSumTree(np.array(1))
+        with self.assertRaises(ValueError):
+            PrefixSumTree(np.array([1]))
+
     def test_reshape(self):
         x1 = PrefixSumTree(np.array([0,1,2,3]).astype("int32"))
         x2 = x1.reshape((2,2))
@@ -89,7 +99,7 @@ class TestPrefixSumTree(unittest.TestCase):
         # we do not want a new PrefixSumTree object (which could result in a large
         # number of unwanted prefix sum tree updates)...and thus the transformation
         # is applied to the underlying array object, and an NDArray is returned
-        self.assertTrue(isinstance(x2,np.ndarray))
+        self.assertFalse(isinstance(x2,PrefixSumTree))
 
         # underlying x and sumtree is unchanged
         self.assertEqual(x2[0],1)
@@ -100,11 +110,131 @@ class TestPrefixSumTree(unittest.TestCase):
         x3 = x
         x3 += 10
         self.assertTrue(isinstance(x,PrefixSumTree))
-        self.assertTrue(isinstance(x3,np.ndarray))
+        self.assertFalse(isinstance(x3,PrefixSumTree))
         self.assertEqual(x3[0],10)
         self.assertEqual(x[0],0)
         self.assertEqual(x._sumtree[1],6)
 
+    def test_set(self):
+        # [[0,1],
+        #  [2,3],
+        #  [4,5]]
+        x = PrefixSumTree(np.array([0,1,2,3,4,5]).astype("int32").reshape((3,2)))
+        # normal array indexing
+        x[1] = 10
+        self.assertEqual(x[0,0],0)
+        self.assertEqual(x[0,1],1)
+        self.assertEqual(x[1,0],10)
+        self.assertEqual(x[1,1],10)
+        self.assertEqual(x[2,0],4)
+        self.assertEqual(x[2,1],5)
+        self.assertEqual(x._sumtree[1],30)
+        # array of indexes 
+        x[np.array([0,1]),np.array([1,0])] = 20
+        self.assertEqual(x[0,0],0)
+        self.assertEqual(x[0,1],20)
+        self.assertEqual(x[1,0],20)
+        self.assertEqual(x[1,1],10)
+        self.assertEqual(x[2,0],4)
+        self.assertEqual(x[2,1],5)
+        self.assertEqual(x._sumtree[1],59)
+        # boolean indexing
+        x[np.array([True,False,True])] = 30
+        self.assertEqual(x[0,0],30)
+        self.assertEqual(x[0,1],30)
+        self.assertEqual(x[1,0],20)
+        self.assertEqual(x[1,1],10)
+        self.assertEqual(x[2,0],30)
+        self.assertEqual(x[2,1],30)
+        self.assertEqual(x._sumtree[1],150)
+
+    def test_get(self):
+        # [[0,1],
+        #  [2,3],
+        #  [4,5]]
+        x = PrefixSumTree(np.array([0,1,2,3,4,5]).astype("int32").reshape((3,2)))
+        # normal array indexing
+        y = x[1]
+        self.assertFalse(isinstance(y,PrefixSumTree))
+        self.assertFalse(np.shares_memory(x,y))
+        self.assertEqual(y[0],2)
+        self.assertEqual(y[1],3)
+        self.assertEqual(y.size,2)
+        # normal array indexing
+        y = x[1:3,1:]
+        self.assertFalse(isinstance(y,PrefixSumTree))
+        self.assertFalse(np.shares_memory(x,y))
+        self.assertEqual(y[0],3)
+        self.assertEqual(y[1],5)
+        self.assertEqual(y.size,2)
+        # array of indexes 
+        y = x[np.array([0,1]),np.array([1,0])]
+        self.assertFalse(isinstance(y,PrefixSumTree))
+        self.assertFalse(np.shares_memory(x,y))
+        self.assertEqual(y[0],1)
+        self.assertEqual(y[1],2)
+        self.assertEqual(y.size,2)
+        # boolean indexing
+        y = x[np.array([True,False,True])]
+        self.assertFalse(isinstance(y,PrefixSumTree))
+        self.assertFalse(np.shares_memory(x,y))
+        self.assertEqual(y[0,0],0)
+        self.assertEqual(y[0,1],1)
+        self.assertEqual(y[1,0],4)
+        self.assertEqual(y[1,1],5)
+        self.assertEqual(y.size,4)
+
+    def test_get_prefix_sum_id(self):
+        # This validates pipes are setup correctly.
+        # Does not test full functionality of get_prefix_sum_idx, since that is
+        # tested elsewhere.
+        x = PrefixSumTree(np.array([1,2,3,4]).astype("int32"))
+        # single element
+        y =  x.get_prefix_sum_id(1.5)
+        self.assertEqual(y[0],1)
+        self.assertEqual(y.size,1)
+        # array of sums
+        y =  x.get_prefix_sum_id([[0.5,1.5],[3.5,6.5]])
+        self.assertEqual(y[0,0],0)
+        self.assertEqual(y[0,1],1)
+        self.assertEqual(y[1,0],2)
+        self.assertEqual(y[1,1],3)
+        self.assertEqual(y.size,4)
+
+    def test_sample(self):
+        # flat index
+        x = PrefixSumTree(np.array([1,2,3,4]).astype("int32"))
+        # single sample
+        idx = x.sample()
+        self.assertTrue(isinstance(idx,np.ndarray))
+        self.assertEqual(idx.size,1)
+        self.assertEqual(x[idx].size,1)
+        # multiple samples
+        idx = x.sample(20)
+        self.assertTrue(isinstance(idx,np.ndarray))
+        self.assertEqual(x[idx].size,20)
+        # 2d index
+        x = PrefixSumTree(np.array([[1,2],[3,4]]).astype("int32"))
+        # single sample
+        idx = x.sample()
+        self.assertTrue(isinstance(idx,tuple))
+        self.assertEqual(len(idx),2)
+        self.assertTrue(isinstance(idx[0],np.ndarray))
+        self.assertTrue(isinstance(idx[1],np.ndarray))
+        self.assertEqual(x[idx].size,1)
+        # multiple samples
+        idx = x.sample(20)
+        self.assertTrue(isinstance(idx,tuple))
+        self.assertEqual(len(idx),2)
+        self.assertTrue(isinstance(idx[0],np.ndarray))
+        self.assertTrue(isinstance(idx[1],np.ndarray))
+        self.assertEqual(x[idx].size,20)
+
+    def test_sum(self):
+        x = PrefixSumTree(np.array([1,2,3,4]).astype("int32"))
+        self.assertEqual(x.sum(),10)
+        x = PrefixSumTree(np.array([[1,2],[3,4]]).astype("int32"))
+        self.assertEqual(x.sum(),10)
 
         
 if __name__ == '__main__':

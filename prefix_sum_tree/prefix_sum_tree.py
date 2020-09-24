@@ -14,13 +14,19 @@ class PrefixSumTree(np.ndarray):
                 return shape_or_array.astype(dtype)
         
         elif isinstance(shape_or_array,np.ndarray):
+            if shape_or_array.size <= 1:
+                raise ValueError("input to PrefixSumTree must have shape with at least 2 elements")
+            assert shape_or_array.size > 1
             dtype = shape_or_array.dtype if dtype is None else dtype
             array = np.zeros(shape_or_array.shape,dtype=dtype).view(PrefixSumTree)
             array.ravel()[:] = shape_or_array.ravel()
             return array
         else:
             dtype = float if dtype is None else dtype
-            return np.zeros(shape_or_array,dtype=dtype).view(PrefixSumTree)
+            array = np.zeros(shape_or_array,dtype=dtype)
+            if array.size <= 1:
+                raise ValueError("input to PrefixSumTree must have shape with at least 2 elements")
+            return array.view(PrefixSumTree)
             
     def __array_finalize__(self,array):
         
@@ -35,12 +41,22 @@ class PrefixSumTree(np.ndarray):
             self._indices = np.arange(array.size, dtype=np.int32).reshape(array.shape)
             self._sumtree = np.zeros_like(self._flat_base)
 
+    # when a transformation is applied to a PrefixSumTree object, it is assumed that
+    # we do not want a new PrefixSumTree object (which could result in a large
+    # number of unwanted prefix sum tree updates)...and thus the transformation
+    # is applied to the underlying array object, and an NDArray is returned
     def __array_prepare__(self, out_arr, context=None):
-        # any op that transforms the array, other than setting values, 
-        # should return an ndarray copy
-        return super(PrefixSumTree, self).__array_prepare__(out_arr.view(np.ndarray).copy(), context)
+        if np.shares_memory(out_arr,self):
+            return out_arr.view(np.ndarray).copy()
+        else:
+            return out_arr.view(np.ndarray)
 
-    
+    def __array_wrap__(self, out_arr, context=None):
+        if np.shares_memory(out_arr,self):
+            return out_arr.view(np.ndarray).copy()
+        else:
+            return out_arr.view(np.ndarray)
+
     def __setitem__(self,idx,val):
         indices = np.ascontiguousarray(self._indices[idx]).ravel()
         values = np.ascontiguousarray(val,dtype=self._flat_base.dtype).ravel()
@@ -71,16 +87,14 @@ class PrefixSumTree(np.ndarray):
         # sample priority values in the cumulative sum
         vals = (self.sum() * np.random.rand(nsamples)).astype(self.dtype)
         # init return array
-        output = np.zeros(nsamples,dtype=np.int32)
+        flat_idx = np.zeros(nsamples,dtype=np.int32)
         # get sampled ids
-        get_prefix_sum_idx(output,vals,self._flat_base,self._sumtree)
-        return output
-
-    def __sum__(self):
-        if len(self) == 1:
-            return self[0]
+        get_prefix_sum_idx(flat_idx,vals,self._flat_base,self._sumtree)
+        # convert to array shape idx
+        if self.ndim <= 1:
+            return flat_idx
         else:
-            return self._sumtree[1]
+            return np.unravel_index(flat_idx,self.shape)
 
     def sum(self,*args,**kwargs):
         if len(args) == 0 and len(kwargs) == 0 and len(self) > 1:
