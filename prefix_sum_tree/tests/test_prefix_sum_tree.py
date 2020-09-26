@@ -235,6 +235,10 @@ class TestPrefixSumTree(unittest.TestCase):
         self.assertEqual(x.sum(),10)
         x = PrefixSumTree(np.array([[1,2],[3,4]]).astype("int32"))
         self.assertEqual(x.sum(),10)
+        y = x.sum(axis=1)
+        self.assertEqual(y[0],3)
+        self.assertEqual(y[1],7)
+        self.assertEqual(y.size,2)
 
         
 if __name__ == '__main__':
