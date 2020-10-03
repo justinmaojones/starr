@@ -2,6 +2,8 @@ import unittest
 import numpy as np
 from prefix_sum_tree._cython import get_prefix_sum_idx
 from prefix_sum_tree._cython import update_prefix_sum_tree
+from prefix_sum_tree._cython import sum as sum_over_tree 
+from prefix_sum_tree._cython import strided_sum
 
 class TestCythonPrefixSumTree(unittest.TestCase):
 
@@ -52,6 +54,19 @@ class TestCythonPrefixSumTree(unittest.TestCase):
 
         for v,e in zip(output,expected_result):
             self.assertEqual(v,e)
+
+        # test sum
+        for i in range(len(values)):
+            for j in range(i,len(values)+1):
+                self.assertEqual(sum_over_tree(base,sum_tree,i,j), values[i:j].sum())
+
+        # test strided sum
+        self.assertEqual(np.abs(strided_sum(base,sum_tree,1)-values).max(), 0)
+        self.assertEqual(np.abs(strided_sum(base,sum_tree,2)-np.array([7,11,7])).max(), 0)
+        self.assertEqual(np.abs(strided_sum(base,sum_tree,3)-np.array([12,13])).max(), 0)
+        self.assertEqual(np.abs(strided_sum(base,sum_tree,4)-np.array([18,7])).max(), 0)
+        self.assertEqual(np.abs(strided_sum(base,sum_tree,5)-np.array([25])).max(), 0)
+
 
 
 if __name__ == '__main__':

@@ -240,6 +240,19 @@ class TestPrefixSumTree(unittest.TestCase):
         self.assertEqual(y[1],7)
         self.assertEqual(y.size,2)
 
+    def test_sum_with_args(self):
+        v = np.random.choice(100,size=(100,100))
+        x = PrefixSumTree(v)
+        self.assertFalse(isinstance(x.sum(axis=1),PrefixSumTree))
+        self.assertTrue(isinstance(x.sum(axis=1),np.ndarray))
+        self.assertFalse(isinstance(x.sum(axis=1,keepdims=True),PrefixSumTree))
+        self.assertTrue(isinstance(x.sum(axis=1,keepdims=True),np.ndarray))
+        self.assertEqual(0, np.abs(x.sum(axis=1) - v.sum(axis=1)).max())
+        self.assertEqual(0, np.abs(x.sum(axis=0) - v.sum(axis=0)).max())
+        self.assertEqual(0, np.abs(x.sum(axis=1,keepdims=True) - v.sum(axis=1,keepdims=True)).max())
+        self.assertEqual(0, np.abs(x.sum(axis=0,keepdims=True) - v.sum(axis=0,keepdims=True)).max())
+        self.assertEqual(0,np.abs(x.sum() - v.sum()).max())
+
         
 if __name__ == '__main__':
     unittest.main()

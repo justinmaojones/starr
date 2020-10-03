@@ -1,6 +1,7 @@
 import numpy as np
 
 from prefix_sum_tree._cython import get_prefix_sum_idx
+from prefix_sum_tree._cython import strided_sum 
 from prefix_sum_tree._cython import update_prefix_sum_tree
 
 class PrefixSumTree(np.ndarray):
@@ -96,10 +97,33 @@ class PrefixSumTree(np.ndarray):
         else:
             return np.unravel_index(flat_idx,self.shape)
 
-    def sum(self,*args,**kwargs):
-        if len(args) == 0 and len(kwargs) == 0 and len(self) > 1:
-            return self._sumtree[1]
+    def _parse_axis_arg(self,axis):
+        if axis is None:
+            return None
         else:
-            # TODO: sum with sumtree
-            return super(PrefixSumTree, self).sum(*args,**kwargs)
+            axes = np.array(axis).reshape(-1)
+            if len(set(axes)) < len(axes):
+                raise ValueError("invalid axis argument: %s contains duplicates" % str(axis))
+            if axes.max() > self.ndim:
+                raise ValueError("invalid axis argument: %s is out of bounds" % str(axis))
+            return np.arange(self.ndim)[axes]
+
+    def sum(self,axis=None,keepdims=False):
+        axes = self._parse_axis_arg(axis)
+        if axes is None:
+            if len(self) > 1:
+                return self._sumtree[1]
+            else:
+                return super(PrefixSumTree, self).sum(keepdims=keepdims)
+        else:
+            if axes.min() == self.ndim - len(axes):
+                # strides are contiguous along leaves of sumtree
+                stride = int(np.prod(np.array(self.shape)[axes]))
+                output = strided_sum(self._flat_base,self._sumtree,stride)
+                if keepdims:
+                    return output.reshape(list(output.shape)+[1]*len(axes))
+                else:
+                    return output
+            else:
+                return super(PrefixSumTree, self).sum(axis=axis,keepdims=keepdims)
 
