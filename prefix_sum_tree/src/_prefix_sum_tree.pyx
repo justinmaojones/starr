@@ -1,4 +1,5 @@
 import cython
+import numpy as np
 
 ctypedef fused INDEX_TYPE:
     cython.integral
@@ -7,6 +8,8 @@ ctypedef fused ARRAY_TYPE:
     cython.integral
     cython.floating
     long double
+
+cdef bint boolean_variable = True
 
 def update_prefix_sum_tree(
             INDEX_TYPE[:] idxs,
@@ -89,4 +92,82 @@ def get_prefix_sum_idx(
 
     return output
 
+cdef INDEX_TYPE power_of_2(INDEX_TYPE i):
+    cdef INDEX_TYPE y = 0
+    while i > 0:
+        i >>= 1
+        y += 1
+    return y
+    
+cdef ARRAY_TYPE get_from_disjoint_sumtree(ARRAY_TYPE[:] array, ARRAY_TYPE[:] sumtree, INDEX_TYPE i):
+    cdef INDEX_TYPE n = len(array)
+    if i >= n:
+        return array[i-n]
+    else:
+        return sumtree[i]
+
+cdef ARRAY_TYPE sum_in_c(ARRAY_TYPE[:] array, ARRAY_TYPE[:] sumtree, INDEX_TYPE a, INDEX_TYPE b):
+
+    b -= 1 # not-inclusive of right end-point
+    if a == b:
+        return array[a]
+    if a > b:
+        return 0
+    
+    cdef INDEX_TYPE n = len(array)
+    a += n
+    b += n
+    cdef ARRAY_TYPE subtract = 0
+
+    # false if a and b share the same largest bit, otherwise true
+    # indicates whather a and b are at the same depth of the sumtree
+    cdef bint wrapped = a < a ^ b     
+
+    if wrapped:
+        # b is one depth lower in tree, so do one
+        # step for just b, which brings both a and b
+        # to the same level in the tree
+        if b % 2 == 0:
+            # is left node, subtract right
+            subtract += get_from_disjoint_sumtree(array, sumtree, b+1)
+        b //= 2
+        
+    while (a // 2) != (b // 2):
+        if a % 2 == 1:
+            # is right node, subtract left
+            subtract += get_from_disjoint_sumtree(array, sumtree, a-1)
+        if b % 2 == 0:
+            # is left node, subtract right
+            subtract += get_from_disjoint_sumtree(array, sumtree, b+1)
+        a //= 2
+        b //= 2
+        
+    if wrapped:
+        return sumtree[1] - subtract
+    else:
+        return get_from_disjoint_sumtree(array, sumtree, a // 2) - subtract
+            
+
+def sum(ARRAY_TYPE[:] array, ARRAY_TYPE[:] sumtree, INDEX_TYPE index_from, INDEX_TYPE index_to):
+    return sum_in_c(array, sumtree, index_from, index_to)
+
+cdef void strided_sum_in_c(ARRAY_TYPE[:] array, ARRAY_TYPE[:] sumtree, ARRAY_TYPE[:] output, INDEX_TYPE stride):
+
+    if len(array) // stride not in (len(output), len(output)-1):
+        raise ValueError, "invalid output size"
+
+    cdef INDEX_TYPE i 
+    for i in range(len(output)):
+        output[i] = sum_in_c(array, sumtree, stride*i, min(stride*(i+1),len(array)))
+
+def strided_sum(ARRAY_TYPE[:] array, ARRAY_TYPE[:] sumtree, INDEX_TYPE stride):
+    
+    # allows for strides that don't divide evenly into length of array
+    n = len(array) // stride
+    if len(array) % stride != 0:
+        n += 1
+
+    cdef ARRAY_TYPE[:] output = np.empty_like(array[:n])
+    strided_sum_in_c(array, sumtree, output, stride)
+    return np.array(output)
 
