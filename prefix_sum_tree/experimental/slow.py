@@ -4,7 +4,6 @@ class SumTree(object):
     
     def __init__(self,size):
         assert size > 0, "size must be greater than 0"
-        #assert size & (size-1) == 0, "size must be a power of 2"
         self._size = size
         self._build_data_object()
         
@@ -54,7 +53,6 @@ class MinTree(object):
     
     def __init__(self,size):
         assert size > 0, "size must be greater than 0"
-        #assert size & (size-1) == 0, "size must be a power of 2"
         self._size = size
         self._build_data_object()
         
