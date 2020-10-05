@@ -1,2 +1,2 @@
 from ._cython import *
-import slow
+from . import slow
