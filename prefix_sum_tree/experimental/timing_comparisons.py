@@ -73,13 +73,13 @@ class TimeFastExperimental(TimingTest):
         self.test_set() # initialize with vals
 
     def test_set(self):
-        prefix_sum_tree.experimental.update_disjoint_tree_multi(
+        prefix_sum_tree.experimental.update_tree_multi(
             IDX, VALS, self.base, self.sumtree)
 
     def test_sample(self, nsamples=S):
         vals_search = (self.sumtree[1] * np.random.rand(nsamples)).astype(self.sumtree.dtype)
         output = np.zeros(nsamples,dtype=np.int32)
-        return prefix_sum_tree.experimental.get_prefix_sum_multi_idx2(
+        return prefix_sum_tree.experimental.get_prefix_sum_idx_multi(
             output, vals_search, self.base, self.sumtree)
 
 def test_set(class_name, num_execs = 1000):
