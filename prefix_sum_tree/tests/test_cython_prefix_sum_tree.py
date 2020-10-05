@@ -67,6 +67,39 @@ class TestCythonPrefixSumTree(unittest.TestCase):
         self.assertEqual(np.abs(strided_sum(base,sum_tree,4)-np.array([18,7])).max(), 0)
         self.assertEqual(np.abs(strided_sum(base,sum_tree,5)-np.array([25])).max(), 0)
 
+    def test_types(self):
+        INDEX_TYPES = [
+            np.int16,
+            np.int32,
+            np.int64,
+        ]
+
+        ARRAY_TYPES = [
+            np.int16,
+            np.int32,
+            np.int64,
+            np.float32,
+            np.float64,
+            np.float128,
+        ]
+
+        N = 100
+        K = 10
+        idx = np.random.choice(N,size=K).astype(np.int32)
+        vals = np.random.choice(10,size=K).astype(float)
+
+        for it in INDEX_TYPES:
+            for at in ARRAY_TYPES:
+                base = np.zeros(N).astype(at)
+                sumtree = np.zeros(N).astype(at)
+                update_prefix_sum_tree(
+                    idx.astype(it), vals.astype(at), base, sumtree)
+
+                output = np.zeros(K).astype(it)
+                vals_search = np.random.choice(int(vals.sum()),size=K).astype(at)
+                get_prefix_sum_idx(
+                    output, vals_search, base, sumtree)
+
 
 
 if __name__ == '__main__':
