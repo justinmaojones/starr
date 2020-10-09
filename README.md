@@ -55,7 +55,7 @@ array([0.1, 0.2, 0.3, 0.4], dtype=float32)
 array([0.10057, 0.19919, 0.29983, 0.40041])
 ```
 
-you can also sample from an n-dimensional `PrefixSumTree`
+you can also sample indices from an n-dimensional `PrefixSumTree`
 ```python
 >>> sum_tree_from_2d_array.sample(4)
 (array([1, 1, 0, 0]), array([0, 1, 1, 2]))
@@ -78,7 +78,7 @@ for large arrays, sum operations over C-contiguous blocks of memory are faster (
 276 µs ± 68.7 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
 ```
 
-sum operations over non C-contiguous blocks of memory (e.g. along the first axis of a 2d array) are slightly slower: 
+sum operations over non C-contiguous blocks of memory (e.g. along the first axis of a 2d array) are slower: 
 ```python
 >>> %timeit x.sum(axis=0)
 367 µs ± 28 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
