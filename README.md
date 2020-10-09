@@ -1,6 +1,6 @@
 # CythonSumTree 
 
-Fast sum segment trees in Cython for Numpy arrays.  Inspired by the [Prioritized Experience Replay](https://arxiv.org/abs/1511.05952) paper.
+Fast sum segment trees in Cython for Numpy arrays.  Inspired by [Prioritized Experience Replay](https://arxiv.org/abs/1511.05952).
 
 ## Installation
 
