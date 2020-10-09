@@ -10,7 +10,7 @@ pip install cython_sum_tree
 
 ## Quickstart 
 
-Initialize a `PrefixSumTree`:
+Initialize a `PrefixSumTree`
 
 ```python
 >>> from prefix_sum_tree import PrefixSumTree
@@ -20,7 +20,7 @@ Initialize a `PrefixSumTree`:
 PrefixSumTree([0., 0., 0., 0.], dtype=float32)
 ```
 
-or build one from an existing n-dimensional numpy array
+Or build one from an existing n-dimensional numpy array
 ```python
 >>> import numpy as np
 >>> sum_tree_from_2d_array = PrefixSumTree(np.array([[1,2,3],[4,5,6]],dtype='int32'))
@@ -30,7 +30,7 @@ PrefixSumTree([[1, 2, 3],
                [4, 5, 6]], dtype=int32)
 ```
 
-set values like you normally would with numpy 
+Set values like you normally would with numpy 
 ```python
 >>> sum_tree[0] = 1
 >>> sum_tree[1:2] = [2]
@@ -41,7 +41,7 @@ set values like you normally would with numpy
 PrefixSumTree([1., 2., 3., 4.], dtype=float32)
 ```
 
-applying operations to a `PrefixSumTree` will always return a numpy array (to avoid expensive sum tree updates)
+Applying operations to a `PrefixSumTree` will always return a numpy array (to avoid expensive sum tree updates)
 ```python
 >>> sum_tree * 2
 array([ 2., 4., 6., 8.], dtype=float32)
@@ -56,7 +56,7 @@ array([ 2., 4., 6., 8.], dtype=float32)
 PrefixSumTree([1., 2., 3., 4.], dtype=float32)
 ```
 
-sample indices (quickly), with each element containing the unnormalized probability of being sampled
+Sample indices (quickly), with each element containing the unnormalized probability of being sampled
 ```python
 >>> sum_tree.sample(10)
 array([2, 3, 3, 3, 3, 1, 2, 2, 2, 0], dtype=int32)
@@ -70,13 +70,13 @@ array([0.1, 0.2, 0.3, 0.4], dtype=float32)
 array([0.10057, 0.19919, 0.29983, 0.40041])
 ```
 
-you can also sample indices from an n-dimensional `PrefixSumTree`
+You can also sample indices from an n-dimensional `PrefixSumTree`
 ```python
 >>> sum_tree_from_2d_array.sample(4)
 (array([1, 1, 0, 0]), array([0, 1, 1, 2]))
 ```
 
-for large arrays, sum operations over C-contiguous blocks of memory are faster (because of the sum tree):
+For large arrays, sum operations over C-contiguous blocks of memory are faster (because of the sum tree):
 ```python
 >>> x = PrefixSumTree(np.ones((1000,1000)))
 >>> %timeit x.sum()
@@ -93,7 +93,7 @@ for large arrays, sum operations over C-contiguous blocks of memory are faster (
 276 µs ± 68.7 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
 ```
 
-sum operations over non C-contiguous blocks of memory (e.g. along the first axis of a 2d array) are slower: 
+Sum operations over non C-contiguous blocks of memory (e.g. along the first axis of a 2d array) are slower: 
 ```python
 >>> %timeit x.sum(axis=0)
 367 µs ± 28 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
