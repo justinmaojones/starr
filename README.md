@@ -46,10 +46,12 @@ sample indices (quickly), with each element containing the unnormalized probabil
 >>> sum_tree.sample(10)
 array([2, 3, 3, 3, 3, 1, 2, 2, 2, 0], dtype=int32)
 
->>> sum_tree / sum_tree.sum() # probability of being sampled
+>>> # probability of being sampled
+>>> sum_tree / sum_tree.sum() 
 array([0.1, 0.2, 0.3, 0.4], dtype=float32)
 
->>> (sum_tree.sample(1000)[None] == np.arange(4)[:,None]).mean(axis=1) # sampled proportions
+>>> # sampled proportions
+>>> (sum_tree.sample(1000)[None] == np.arange(4)[:,None]).mean(axis=1) 
 array([0.10057, 0.19919, 0.29983, 0.40041])
 ```
 
