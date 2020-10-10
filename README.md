@@ -14,16 +14,14 @@ Initialize a `PrefixSumTree`, which is a subclass of `numpy.ndarray`
 ```python
 >>> from prefix_sum_tree import PrefixSumTree
 >>> sum_tree = PrefixSumTree(4,dtype='float32')
-
 >>> sum_tree
 PrefixSumTree([0., 0., 0., 0.], dtype=float32)
 ```
 
-Or build one from an existing n-dimensional numpy array
+Or build one from an existing n-dimensional `numpy.ndarray` 
 ```python
 >>> import numpy as np
 >>> sum_tree_from_2d_array = PrefixSumTree(np.array([[1,2,3],[4,5,6]],dtype='int32'))
-
 >>> sum_tree_from_2d_array
 PrefixSumTree([[1, 2, 3],
                [4, 5, 6]], dtype=int32)
@@ -31,12 +29,10 @@ PrefixSumTree([[1, 2, 3],
 
 All `numpy.ndarray` methods are available to `PrefixSumTree`.  For example, set values like you normally would with numpy 
 ```python
->>> sum_tree
 >>> sum_tree[0] = 1
 >>> sum_tree[1:2] = [2]
 >>> sum_tree[np.array([False,False,True,False])] = 3
 >>> sum_tree[-1] = 4
-
 >>> sum_tree
 PrefixSumTree([1., 2., 3., 4.], dtype=float32)
 ```
