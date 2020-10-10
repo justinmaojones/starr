@@ -37,7 +37,7 @@ All `numpy.ndarray` methods are available to `PrefixSumTree`.  For example, set 
 PrefixSumTree([1., 2., 3., 4.], dtype=float32)
 ```
 
-However, applying operations to a `PrefixSumTree` will always return a numpy array (to avoid expensive sum tree updates). 
+Arithmetic operations on a `PrefixSumTree` will always return a numpy array (to avoid expensive tree updates). 
 ```python
 >>> sum_tree * 2
 array([ 2., 4., 6., 8.], dtype=float32)
