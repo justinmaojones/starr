@@ -56,6 +56,9 @@ This is true for get operations as well
 ```python
 >>> sum_tree[1:3]
 array([2., 3.], dtype=float32)
+
+>>> sum_tree[:]
+array([1., 2., 3., 4.], dtype=float32)
 ```
 
 Sample indices (efficiently), with each element containing the unnormalized probability of being sampled
