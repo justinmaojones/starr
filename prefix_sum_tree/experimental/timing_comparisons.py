@@ -3,9 +3,9 @@ import prefix_sum_tree.experimental
 import numpy as np
 import timeit
 
-K = 1000
-N = 100000000
-S = 100
+N = int(1e6) # size of base array
+K = int(1e3) # number of indices to set
+S = int(1e2) # number of indices to sample
 np.random.seed(1)
 IDX = np.random.choice(N,size=K).astype(np.int32)
 VALS = np.random.choice(10,size=K).astype(float)
@@ -69,6 +69,9 @@ class TimeSlowExperimental(TimingTest):
     def test_sample(self, nsamples=S):
         return self.sumtree.sample(nsamples)
 
+    def test_sum(self):
+        return self.sumtree.sum()
+
 class TimeFastExperimental(TimingTest):
 
     def __init__(self):
@@ -85,6 +88,9 @@ class TimeFastExperimental(TimingTest):
         output = np.ones(nsamples,dtype=np.int32)
         return prefix_sum_tree.experimental.get_prefix_sum_idx_multi(
             output, vals_search, self.base, self.sumtree)
+
+    def test_sum(self):
+        return self.sumtree[1]
 
 def test_set(class_name, num_execs = 1000):
     setup = "from __main__ import {class_name}; timing_test = {class_name}()".format(**locals())
@@ -107,7 +113,7 @@ def test_sum(class_name, num_execs = 1000):
 
 if __name__ == '__main__':
 
-    print("\n# __set__ %d values:\n" % N)
+    print("\n# __set__ %d values:\n" % K)
     test_set("NDArray", 1000)
     test_set("TimePrefixSumTree", 1000)
     test_set("TimeFastExperimental", 1000)
@@ -122,6 +128,8 @@ if __name__ == '__main__':
     print("\n# sum entire array:\n")
     test_sum("NDArray", 1000)
     test_sum("TimePrefixSumTree", 1000)
+    test_sum("TimeFastExperimental", 1000)
+    test_sum("TimeSlowExperimental", 1000)
 
     print('')
 
