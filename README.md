@@ -1,6 +1,6 @@
 # CythonSumTree 
 
-Fast sum segment trees in Cython for Numpy arrays.  Inspired by [Prioritized Experience Replay](https://arxiv.org/abs/1511.05952).
+Fast sum segment trees in C (via Cython) for Numpy arrays in Python.  Inspired by [Prioritized Experience Replay](https://arxiv.org/abs/1511.05952).
 
 ## Installation
 
@@ -10,8 +10,7 @@ pip install cython_sum_tree
 
 ## Quickstart 
 
-Initialize a `PrefixSumTree`
-
+Initialize a `PrefixSumTree`, which is a subclass of `numpy.ndarray`
 ```python
 >>> from prefix_sum_tree import PrefixSumTree
 >>> sum_tree = PrefixSumTree(4,dtype='float32')
@@ -30,8 +29,9 @@ PrefixSumTree([[1, 2, 3],
                [4, 5, 6]], dtype=int32)
 ```
 
-Set values like you normally would with numpy 
+All `numpy.ndarray` methods are available to `PrefixSumTree`.  For example, set values like you normally would with numpy 
 ```python
+>>> sum_tree
 >>> sum_tree[0] = 1
 >>> sum_tree[1:2] = [2]
 >>> sum_tree[np.array([False,False,True,False])] = 3
@@ -41,7 +41,7 @@ Set values like you normally would with numpy
 PrefixSumTree([1., 2., 3., 4.], dtype=float32)
 ```
 
-Applying operations to a `PrefixSumTree` will always return a numpy array (to avoid expensive sum tree updates)
+However, applying operations to a `PrefixSumTree` will always return a numpy array (to avoid expensive sum tree updates). 
 ```python
 >>> sum_tree * 2
 array([ 2., 4., 6., 8.], dtype=float32)
@@ -56,7 +56,13 @@ array([ 2., 4., 6., 8.], dtype=float32)
 PrefixSumTree([1., 2., 3., 4.], dtype=float32)
 ```
 
-Sample indices (quickly), with each element containing the unnormalized probability of being sampled
+This is true for get operations as well
+```python
+>>> sum_tree[1:3]
+array([2., 3.], dtype=float32)
+```
+
+Sample indices (efficiently), with each element containing the unnormalized probability of being sampled
 ```python
 >>> sum_tree.sample(10)
 array([2, 3, 3, 3, 3, 1, 2, 2, 2, 0], dtype=int32)
@@ -76,7 +82,20 @@ You can also sample indices from an n-dimensional `PrefixSumTree`
 (array([1, 1, 0, 0]), array([0, 1, 1, 2]))
 ```
 
-For large arrays, sum operations over C-contiguous blocks of memory are faster (because of the sum tree):
+## Performance
+
+Sampling indices is faster than normal sampling methods in `numpy`
+```python
+>>> x = PrefixSumTree(np.ones(int(1e6)))
+>>> %timeit x.sample(100)
+55.2 µs ± 6.17 µs per loop (mean ± std. dev. of 7 runs, 10000 loops each)
+
+>>> y = np.ones(int(1e6))
+>>> %timeit np.random.choice(len(y),size=100,p=y/y.sum())
+10.8 ms ± 697 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
+```
+
+For large arrays, sum operations over C-contiguous blocks of memory are faster than `ndarray`, because of the sum tree:
 ```python
 >>> x = PrefixSumTree(np.ones((1000,1000)))
 >>> %timeit x.sum()
@@ -100,4 +119,28 @@ Sum operations over non C-contiguous blocks of memory (e.g. along the first axis
 
 >>> %timeit y.sum(axis=0)
 303 µs ± 6.97 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
+```
+
+Set operations are much slower in `PrefixSumTree` than in `ndarray`, because each set operation updates the tree, but that's okay when using `PrefixSumTree` for applications that rely heavily on sampling and sum operations, such as prioritzed experience replay!  In the example below, updating and sampling with `PrefixSumTree` is 150x faster than with `ndarray`, even though the update operation alone in `ndarray` is 26x faster than `PrefixSumTree`!
+```python
+>>> x = PrefixSumTree(np.ones(int(1e6)))
+
+>>> # set only 
+>>> %timeit x[-10:] = 2
+10.8 µs ± 525 ns per loop (mean ± std. dev. of 7 runs, 100000 loops each)
+
+>>> # set + sample 
+>>> %timeit x[-10:] = 2; x.sample(100)
+71.4 µs ± 3.71 µs per loop (mean ± std. dev. of 7 runs, 10000 loops each)
+
+>>> y = np.ones(int(1e6))
+>>> y_sum = y.sum() # let's assume we keep track of this efficiently
+
+>>> # set only 
+>>> %timeit y[-10:] = 2
+411 ns ± 28.5 ns per loop (mean ± std. dev. of 7 runs, 1000000 loops each)
+
+>>> # set + sample 
+>>> %timeit y[-10:] = 2; np.random.choice(len(y),size=100,p=y/y_sum)
+10.7 ms ± 752 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)
 ```
