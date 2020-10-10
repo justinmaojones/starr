@@ -41,7 +41,7 @@ class NDArray(TimingTest):
         self.base.sum()
 
 
-class TimePrefixSumTree(TimingTest):
+class PrefixSumTree(TimingTest):
 
     def __init__(self):
         self.sumtree = prefix_sum_tree.PrefixSumTree(np.ones(N))
@@ -56,7 +56,7 @@ class TimePrefixSumTree(TimingTest):
     def test_sum(self, nsamples=S):
         return self.sumtree.sum()
 
-class TimeSlowExperimental(TimingTest):
+class PythonList(TimingTest):
 
     def __init__(self):
         self.sumtree = prefix_sum_tree.experimental.slow.SumTree(N)
@@ -72,7 +72,7 @@ class TimeSlowExperimental(TimingTest):
     def test_sum(self):
         return self.sumtree.sum()
 
-class TimeFastExperimental(TimingTest):
+class CPlusPlus(TimingTest):
 
     def __init__(self):
         self.base = np.ones(N)
@@ -115,21 +115,21 @@ if __name__ == '__main__':
 
     print("\n# __set__ %d values:\n" % K)
     test_set("NDArray", 1000)
-    test_set("TimePrefixSumTree", 1000)
-    test_set("TimeFastExperimental", 1000)
-    test_set("TimeSlowExperimental", 100)
+    test_set("PrefixSumTree", 1000)
+    test_set("CPlusPlus", 1000)
+    test_set("PythonList", 100)
 
     print("\n# priority-sample %d values:\n" % S)
     test_sample("NDArray", 100)
-    test_sample("TimePrefixSumTree", 1000)
-    test_sample("TimeFastExperimental", 1000)
-    test_sample("TimeSlowExperimental", 100)
+    test_sample("PrefixSumTree", 1000)
+    test_sample("CPlusPlus", 1000)
+    test_sample("PythonList", 100)
 
     print("\n# sum entire array:\n")
     test_sum("NDArray", 1000)
-    test_sum("TimePrefixSumTree", 1000)
-    test_sum("TimeFastExperimental", 1000)
-    test_sum("TimeSlowExperimental", 1000)
+    test_sum("PrefixSumTree", 1000)
+    test_sum("CPlusPlus", 1000)
+    test_sum("PythonList", 1000)
 
     print('')
 
