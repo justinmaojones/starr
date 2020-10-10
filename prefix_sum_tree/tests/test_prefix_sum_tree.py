@@ -253,6 +253,17 @@ class TestPrefixSumTree(unittest.TestCase):
         self.assertEqual(0, np.abs(x.sum(axis=0,keepdims=True) - v.sum(axis=0,keepdims=True)).max())
         self.assertEqual(0,np.abs(x.sum() - v.sum()).max())
 
+    def test_invalid_entry_error(self):
+        with self.assertRaises(ValueError):
+            PrefixSumTree(np.array([-1,0,1]).astype("int32"))
+        with self.assertRaises(ValueError):
+            x = PrefixSumTree(np.array([1,2,3,4]).astype("int32"))
+            x[:2] = -1
+
+    def test_sample_validation(self):
+        with self.assertRaises(ValueError):
+            x = PrefixSumTree(10)
+            x.sample(10)
         
 if __name__ == '__main__':
     unittest.main()
