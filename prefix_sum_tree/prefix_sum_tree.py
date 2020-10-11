@@ -58,10 +58,15 @@ class PrefixSumTree(np.ndarray):
         else:
             return out_arr.view(np.ndarray)
 
+    def _validate_input(self,values):
+        if values.min() < 0:
+            raise ValueError("values must non-negative")
+
     def __setitem__(self,idx,val):
         # TODO: there's probably a better way of converting idx to flat idx 
         indices = np.ascontiguousarray(self._indices[idx]).ravel()
         values = np.ascontiguousarray(val,dtype=self._flat_base.dtype).ravel()
+        self._validate_input(values)
         update_prefix_sum_tree(
                 indices, values, self._flat_base, self._sumtree)
 
@@ -86,6 +91,10 @@ class PrefixSumTree(np.ndarray):
         return output.reshape(prefix_sum.shape)
 
     def sample(self,nsamples=1):
+
+        if self.sum() == 0:
+            raise ValueError("array must have at least 1 positive value")
+
         # sample priority values in the cumulative sum
         vals = (self.sum() * np.random.rand(nsamples)).astype(self.dtype)
         # init return array
@@ -104,9 +113,7 @@ class PrefixSumTree(np.ndarray):
         else:
             axes = np.array(axis).reshape(-1)
             if len(set(axes)) < len(axes):
-                raise ValueError("invalid axis argument: %s contains duplicates" % str(axis))
-            if axes.max() > self.ndim:
-                raise ValueError("invalid axis argument: %s is out of bounds" % str(axis))
+                raise IndexError("invalid axis argument: %s contains duplicates" % str(axis))
             return np.arange(self.ndim)[axes]
 
     def sum(self,axis=None,keepdims=False):

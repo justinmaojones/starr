@@ -253,6 +253,29 @@ class TestPrefixSumTree(unittest.TestCase):
         self.assertEqual(0, np.abs(x.sum(axis=0,keepdims=True) - v.sum(axis=0,keepdims=True)).max())
         self.assertEqual(0,np.abs(x.sum() - v.sum()).max())
 
+    def test_parse_axis_arg(self):
+        x = PrefixSumTree((2,3,4))
+
+        def check_normal_inputs(axis, expected):
+            output = x._parse_axis_arg(axis)
+            self.assertTrue(isinstance(output, np.ndarray))
+            self.assertEqual(output.ndim, 1)
+            self.assertEqual(len(output), len(expected))
+            self.assertTrue(np.issubdtype(output.dtype, np.integer))
+            self.assertTrue(np.all(output==expected))
+
+        self.assertEqual(x._parse_axis_arg(None), None)
+        check_normal_inputs(0, np.array([0], dtype=int))
+        check_normal_inputs((0,1), np.array([0,1], dtype=int))
+        check_normal_inputs((1,-1), np.array([1,2], dtype=int))
+        check_normal_inputs(-1, np.array([2], dtype=int))
+        check_normal_inputs(-2, np.array([1], dtype=int))
+
+        with self.assertRaises(IndexError):
+            x._parse_axis_arg((1,1))
+        with self.assertRaises(IndexError):
+            x._parse_axis_arg(3)
+
     def test_invalid_entry_error(self):
         with self.assertRaises(ValueError):
             PrefixSumTree(np.array([-1,0,1]).astype("int32"))
