@@ -18,12 +18,14 @@ class PrefixSumTree(np.ndarray):
     ----------
     shape_or_array : int, tuple of ints, array-like
         When an int or tuple of ints is provided, a ``PrefixSumTree`` is created
-        from an array of zeros of the given shape.  When array-like, a
+        from an array of zeros of the given shape. When array-like, a
         ``PrefixSumTree`` is created from the given array.
     dtype : data-type, optional
         When provided creates a ``PrefixSumTree`` of the specified dtype. If not
         provided, and ``shape_or_array`` is a shape, then an array of zeros with
-        dtype ``float`` is created.  Defaults to ``None``.
+        dtype ``float`` is created.  Defaults to ``None``. All integer and floating
+        point dtypes are supported. Because of the non-negativity requirement,
+        complex dtypes are not supported.
 
     Notes
     -----
