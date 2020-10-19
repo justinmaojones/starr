@@ -3,11 +3,18 @@ import numpy as np
 
 ctypedef fused INDEX_TYPE:
     cython.integral
+    unsigned short
+    unsigned int
+    unsigned long
 
 ctypedef fused ARRAY_TYPE:
     cython.integral
     cython.floating
     long double
+    unsigned char
+    unsigned short
+    unsigned int
+    unsigned long
 
 cdef bint boolean_variable = True
 
