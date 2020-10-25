@@ -72,9 +72,6 @@ class TestCythonPrefixSumTree(unittest.TestCase):
             np.int16,
             np.int32,
             np.int64,
-            np.uint16,
-            np.uint32,
-            np.uint64,
         ]
 
         ARRAY_TYPES = [
@@ -84,10 +81,6 @@ class TestCythonPrefixSumTree(unittest.TestCase):
             np.float32,
             np.float64,
             np.float128,
-            np.uint8,
-            np.uint16,
-            np.uint32,
-            np.uint64,
         ]
 
         N = 100
