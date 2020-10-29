@@ -113,6 +113,13 @@ def test_sum(class_name, num_execs = 1000):
 
 if __name__ == '__main__':
 
+    # encoding=utf8
+    import sys
+    reload(sys)
+    sys.setdefaultencoding('utf8')
+
+    print("\narray-size: %d %s" % (N, str(VALS.dtype))) 
+
     print("\n# __set__ %d values:\n" % K)
     test_set("NDArray", 1000)
     test_set("PrefixSumTree", 1000)
