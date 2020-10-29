@@ -1,4 +1,4 @@
-from distutils.core import setup, Extension
+from setuptools import find_packages, setup, Extension
 from Cython.Distutils import build_ext
 
 import numpy
@@ -10,7 +10,7 @@ setup(
 	author='Justin Mao-Jones',
 	author_email='justinmaojones@gmail.com',
 	install_requires=open('requirements.txt').read(),
-	packages=['prefix_sum_tree'],
+    packages=find_packages(include=['prefix_sum_tree','prefix_sum_tree.*']),
     cmdclass={'build_ext': build_ext},
     ext_modules = [ 
         Extension(
@@ -27,7 +27,7 @@ setup(
                 'prefix_sum_tree/experimental/src/prefix_sum_tree.cpp'
             ],
             include_dirs=[numpy.get_include(),'.'],
-            language='C++'
+            language='c++'
         ),
     ]
  )
