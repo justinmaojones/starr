@@ -1,9 +1,9 @@
 import unittest
 import numpy as np
-from prefix_sum_tree._cython import get_prefix_sum_idx
-from prefix_sum_tree._cython import update_prefix_sum_tree
-from prefix_sum_tree._cython import sum as sum_over_tree 
-from prefix_sum_tree._cython import strided_sum
+from prefix_sum_tree import get_prefix_sum_idx
+from prefix_sum_tree import update_prefix_sum_tree
+from prefix_sum_tree import sum as array_sum 
+from prefix_sum_tree import strided_sum
 
 class TestCythonPrefixSumTree(unittest.TestCase):
 
@@ -58,7 +58,7 @@ class TestCythonPrefixSumTree(unittest.TestCase):
         # test sum
         for i in range(len(values)):
             for j in range(i,len(values)+1):
-                self.assertEqual(sum_over_tree(base,sum_tree,i,j), values[i:j].sum())
+                self.assertEqual(array_sum(base,sum_tree,i,j), values[i:j].sum())
 
         # test strided sum
         self.assertEqual(np.abs(strided_sum(base,sum_tree,1)-values).max(), 0)
