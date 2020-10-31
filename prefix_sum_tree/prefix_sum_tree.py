@@ -68,57 +68,40 @@ class PrefixSumTree(np.ndarray):
     PrefixSumTree([2., 1., 3., 4.], dtype=float32)
     """
 
-    def __new__(self,shape_or_array,dtype=None):
+    def __init__(self,shape_or_array,dtype=None):
 
-        if isinstance(shape_or_array,PrefixSumTree):
-            if dtype is None:
-                return shape_or_array
-            else:
-                return shape_or_array.astype(dtype)
-        
-        elif isinstance(shape_or_array,np.ndarray):
-            if shape_or_array.size <= 1:
-                raise ValueError("input to PrefixSumTree must have shape with at least 2 elements")
-            assert shape_or_array.size > 1
-            dtype = shape_or_array.dtype if dtype is None else dtype
-            array = np.zeros(shape_or_array.shape,dtype=dtype).view(PrefixSumTree)
-            array.ravel()[:] = shape_or_array.ravel()
-            return array
-        else:
-            dtype = float if dtype is None else dtype
-            array = np.zeros(shape_or_array,dtype=dtype)
-            if array.size <= 1:
-                raise ValueError("input to PrefixSumTree must have shape with at least 2 elements")
-            return array.view(PrefixSumTree)
-            
-    def __array_finalize__(self,array):
-        
-        if isinstance(self.base,PrefixSumTree):
-            # inherit the same base and sum tree
-            self._flat_base = self.base._flat_base
-            self._indices = self.base._indices.reshape(array.shape)
-            self._sumtree = self.base._sumtree
-        else:
-            # initialize
-            self._flat_base = array.view(np.ndarray).ravel()
-            self._indices = np.arange(array.size, dtype=np.int32).reshape(array.shape)
-            self._sumtree = np.zeros_like(self._flat_base)
+        if isinstance(shape_or_array, PrefixSumTree):
+            self._init_from_prefix_sum_tree(shape_or_array, dtype)
 
-    # when a transformation is applied to a PrefixSumTree object, it is assumed that
-    # we do not want a new PrefixSumTree object (which could result in a large
-    # number of unwanted prefix sum tree updates)...and thus the transformation
-    # is applied to the underlying array object, and an NDArray is returned
-    def __array_prepare__(self, out_arr, context=None):
-        if np.shares_memory(out_arr,self):
-            return out_arr.view(np.ndarray).copy()
-        else:
-            return out_arr.view(np.ndarray)
+        elif isinstance(shape_or_array, np.ndarray):
+            self._init_from_ndarray(shape_or_array, dtype)
 
-    def __array_wrap__(self, out_arr, context=None):
-        if np.shares_memory(out_arr,self):
-            return out_arr.view(np.ndarray).copy() # we may never actually get here
         else:
-            return out_arr.view(np.ndarray)
+            self._init_from_shape(shape_or_array, dtype)
+
+    def _init_from_prefix_sum_tree(self, prefix_sum_tree, dtype=None):
+        self._init_from_ndarray(prefix_sum_tree._array, dtype)
+
+    def _init_from_ndarray(self, array, dtype=None):
+        if shape_or_array.size <= 1:
+            raise ValueError("input to PrefixSumTree must have shape with at least 2 elements")
+        array = shape_or_array
+        self.dtype = array.dtype if dtype is None else dtype
+        self._array = np.zeros(array.shape, dtype=self.dtype)
+        self._flat_base = self._array.ravel() # shared memory
+        self._indices = np.arange(array.size, dtype=np.int32).reshape(array.shape)
+        self._sumtree = np.zeros_like(self._flat_base)
+        self[:] = array
+
+    def _init_from_shape(self, shape, dtype=None):
+        self.dtype = float if dtype is None else dtype
+        array = np.zeros(shape, dtype=self.dtype)
+        if array.size <= 1:
+            raise ValueError("input to PrefixSumTree must have shape with at least 2 elements")
+        self._array = array
+        self._flat_base = self._array.ravel() # shared memory
+        self._indices = np.arange(array.size, dtype=np.int32).reshape(array.shape)
+        self._sumtree = np.zeros_like(self._flat_base)
 
     def _validate_input(self,values):
         if values.min() < 0:
@@ -133,18 +116,16 @@ class PrefixSumTree(np.ndarray):
                 indices, values, self._flat_base, self._sumtree)
 
     def __getitem__(self,idx):
-        output = super(PrefixSumTree,self).__getitem__(idx)
-        if self is output.base or self is output:
-            # if the output is a view of self, then copy it
-            # because working directly with a view of self is dangerous
-            return output.view(np.ndarray).copy()
+        output = self._array[idx]
+        if np.shares_memory(output, self._array):
+            # returning view of self is dangerous, thus return copy
+            return output.copy()
         else:
             # otherwise, already copied, so return a normal ndarray
-            return output.view(np.ndarray)
+            return output
 
-    def view(self,*args,**kwargs):
-        return super(PrefixSumTree,self).view(np.ndarray).copy().view(*args,**kwargs)
-
+    def array(self):
+        return self._array.copy()
 
     def sumtree(self):
         """
@@ -169,7 +150,7 @@ class PrefixSumTree(np.ndarray):
         >>> sum_tree_from_2d_array.sumtree()
         array([ 0., 10.,  3.,  7.], dtype=float32)
         """
-        return np.copy(self._sumtree)
+        return self._sumtree.copy()
     
     def get_prefix_sum_id(self,prefix_sum,flatten_indices=False):
         """
@@ -301,6 +282,9 @@ class PrefixSumTree(np.ndarray):
         vals = (self.sum() * np.random.rand(nsamples)).astype(self.dtype)
         return self.get_prefix_sum_id(vals,flatten_indices)
 
+    def shape(self):
+        return self._array.shape
+
     def _parse_axis_arg(self,axis):
         if axis is None:
             return None
@@ -376,10 +360,10 @@ class PrefixSumTree(np.ndarray):
         """
         axes = self._parse_axis_arg(axis)
         if axes is None:
-            if len(self) > 1:
-                return self._sumtree[1]
+            if keepdims:
+                return self._sumtree[1].reshape([1]*len(self.shape))
             else:
-                return super(PrefixSumTree, self).sum(keepdims=keepdims)
+                return self._sumtree[1]
         else:
             if axes.min() == self.ndim - len(axes):
                 # strides are contiguous along leaves of sumtree
@@ -390,5 +374,6 @@ class PrefixSumTree(np.ndarray):
                 else:
                     return output
             else:
-                return super(PrefixSumTree, self).sum(axis=axis,keepdims=keepdims)
+                # strides are not contiguous along leaves of sumtree
+                return self._array.sum(axis=axis,keepdims=keepdims)
 
