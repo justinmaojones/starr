@@ -116,7 +116,7 @@ class PrefixSumTree(np.ndarray):
 
     def __array_wrap__(self, out_arr, context=None):
         if np.shares_memory(out_arr,self):
-            return out_arr.view(np.ndarray).copy()
+            return out_arr.view(np.ndarray).copy() # we may never actually get here
         else:
             return out_arr.view(np.ndarray)
 
