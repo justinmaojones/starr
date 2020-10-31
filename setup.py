@@ -6,7 +6,7 @@ import numpy
 setup(
 	name='prefix_sum_tree',
 	version='0.1',
-	description='Prefix sum trees in Cython',
+	description='Prefix sum trees in Cython for Numpy',
 	author='Justin Mao-Jones',
 	author_email='justinmaojones@gmail.com',
 	install_requires=open('requirements.txt').read(),
