@@ -4,7 +4,7 @@ from ._cython import get_prefix_sum_idx
 from ._cython import strided_sum 
 from ._cython import update_prefix_sum_tree
 
-class PrefixSumTree(np.ndarray):
+class PrefixSumTree(object):
     """
     A subclass of an ``numpy.ndarray`` that maintains an internal sumtree
     for fast Categorical distribution sampling and fast sum operations,
@@ -79,13 +79,22 @@ class PrefixSumTree(np.ndarray):
         else:
             self._init_from_shape(shape_or_array, dtype)
 
+        self.size = self._array.size
+
     def _init_from_prefix_sum_tree(self, prefix_sum_tree, dtype=None):
-        self._init_from_ndarray(prefix_sum_tree._array, dtype)
+        if dtype is None:
+            # share memory
+            self.dtype = prefix_sum_tree.dtype
+            self._array = prefix_sum_tree._array
+            self._flat_base = prefix_sum_tree._flat_base
+            self._sumtree = prefix_sum_tree._sumtree
+        else:
+            # make a copy
+            self._init_from_ndarray(prefix_sum_tree._array, dtype)
 
     def _init_from_ndarray(self, array, dtype=None):
-        if shape_or_array.size <= 1:
+        if array.size <= 1:
             raise ValueError("input to PrefixSumTree must have shape with at least 2 elements")
-        array = shape_or_array
         self.dtype = array.dtype if dtype is None else dtype
         self._array = np.zeros(array.shape, dtype=self.dtype)
         self._flat_base = self._array.ravel() # shared memory
@@ -222,6 +231,14 @@ class PrefixSumTree(np.ndarray):
             return output 
         else:
             return np.unravel_index(output,self.shape)
+
+    def reshape(self, shape, inplace=False):
+        if inplace == True:
+            self._array = self._array.reshape(shape)
+            self._indices = self._indices.reshape(shape)
+            return self
+        else:
+            return PrefixSumTree(self).reshape(shape, inplace=True)
 
 
     def sample(self,nsamples=1,flatten_indices=False):
