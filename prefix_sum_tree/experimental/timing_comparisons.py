@@ -114,9 +114,9 @@ def test_sum(class_name, num_execs = 1000):
 if __name__ == '__main__':
 
     # encoding=utf8
-    import sys
-    reload(sys)
-    sys.setdefaultencoding('utf8')
+    #import sys
+    #reload(sys)
+    #sys.setdefaultencoding('utf8')
 
     print("\narray-size: %d %s" % (N, str(VALS.dtype))) 
 

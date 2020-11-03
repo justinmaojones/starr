@@ -2,7 +2,18 @@ import numpy as np
 
 from ._cython import get_prefix_sum_idx
 from ._cython import strided_sum 
+from ._cython import update_entire_prefix_sum_tree
 from ._cython import update_prefix_sum_tree
+
+def temporarily_enable_update(func):
+    def wrapper(self, *args, **kwargs):
+        self._enable_writes(True)
+        try:
+            output = func(self, *args, **kwargs)
+        finally:
+            self._enable_writes(False)
+        return output
+    return wrapper
 
 class PrefixSumTree(np.ndarray):
     """
@@ -74,54 +85,88 @@ class PrefixSumTree(np.ndarray):
             if dtype is None:
                 return shape_or_array
             else:
-                return shape_or_array.astype(dtype)
+                return PrefixSumTree(shape_or_array.base,dtype)
         
-        elif isinstance(shape_or_array,np.ndarray):
+        elif isinstance(shape_or_array, np.ndarray):
             if shape_or_array.size <= 1:
                 raise ValueError("input to PrefixSumTree must have shape with at least 2 elements")
             assert shape_or_array.size > 1
             dtype = shape_or_array.dtype if dtype is None else dtype
-            array = np.zeros(shape_or_array.shape,dtype=dtype).view(PrefixSumTree)
-            array.ravel()[:] = shape_or_array.ravel()
-            return array
+            array = shape_or_array.astype(dtype, copy=True) # strictly copies
+            return array.view(PrefixSumTree)
         else:
             dtype = float if dtype is None else dtype
             array = np.zeros(shape_or_array,dtype=dtype)
             if array.size <= 1:
                 raise ValueError("input to PrefixSumTree must have shape with at least 2 elements")
             return array.view(PrefixSumTree)
-            
+
+    @temporarily_enable_update
     def __array_finalize__(self,array):
-        
-        if isinstance(self.base,PrefixSumTree):
+
+        if not np.shares_memory(array, self):
+            # we should never end up here
+            # note that we would have ended up here without overriding copy(...)
+            raise NotImplementedError("input array and self must share memory")
+
+        if isinstance(self.base, PrefixSumTree) and self.base.dtype == self.dtype:
             # inherit the same base and sum tree
+            if array.size != self.size:
+                # we should never end up here
+                raise NotImplementedError("input array and base PrefixSumTree must have same number of elements")
             self._flat_base = self.base._flat_base
-            self._indices = self.base._indices.reshape(array.shape)
+            self._indices = self.base._indices.reshape(self.shape)
             self._sumtree = self.base._sumtree
         else:
             # initialize
             self._flat_base = array.view(np.ndarray).ravel()
-            self._indices = np.arange(array.size, dtype=np.int32).reshape(array.shape)
+            self._indices = np.arange(array.size, dtype=np.int32).reshape(self.shape)
             self._sumtree = np.zeros_like(self._flat_base)
+            # sumtree needs to be initialize
+            self._rebuild_sumtree()
 
-    # when a transformation is applied to a PrefixSumTree object, it is assumed that
+    # When a transformation is applied to a PrefixSumTree object, it is assumed that
     # we do not want a new PrefixSumTree object (which could result in a large
     # number of unwanted prefix sum tree updates)...and thus the transformation
-    # is applied to the underlying array object, and an NDArray is returned
+    # is applied to the underlying array object, and an NDArray is returned.
+    # The exception to this rule is in-place operators, such as +=
     def __array_prepare__(self, out_arr, context=None):
-        if np.shares_memory(out_arr,self):
-            return out_arr.view(np.ndarray).copy()
-        else:
-            return out_arr.view(np.ndarray)
+        return out_arr.view(np.ndarray)
 
     def __array_wrap__(self, out_arr, context=None):
-        if np.shares_memory(out_arr,self):
-            return out_arr.view(np.ndarray).copy() # we may never actually get here
+        return out_arr.view(np.ndarray)
+
+    @temporarily_enable_update
+    def __array_ufunc__(self, ufunc, method, *inputs, out=None, **kwargs):
+        inputs = list(inputs)
+        for i, x in enumerate(inputs):
+            if isinstance(x, PrefixSumTree):
+                inputs[i] = x.view(np.ndarray)
+        inputs = tuple(inputs)
+        if out is not None:
+            if len(out) == 1 and out[0] is self: 
+                # this is an in-place update on self
+                # proceed with update and then rebuild sumtree
+                kwargs['out'] = (self.view(np.ndarray),)
+                output = super(PrefixSumTree, self).__array_ufunc__(ufunc, method, *inputs, **kwargs)
+                self._rebuild_sumtree()
+                return self
+            else:
+                raise NotImplementedError
         else:
-            return out_arr.view(np.ndarray)
+            return super(PrefixSumTree, self).__array_ufunc__(ufunc, method, *inputs, **kwargs)
+
+    def _enable_writes(self,val):
+        head = self
+        update_stack = [head]
+        while head is not None:
+            update_stack.append(head)
+            head = head.base
+        while len(update_stack) > 0:
+            update_stack.pop().setflags(write=val)
 
     def _validate_input(self,values):
-        if values.min() < 0:
+        if np.min(values) < 0:
             raise ValueError("values must non-negative")
 
     def __setitem__(self,idx,val):
@@ -133,18 +178,30 @@ class PrefixSumTree(np.ndarray):
                 indices, values, self._flat_base, self._sumtree)
 
     def __getitem__(self,idx):
-        output = super(PrefixSumTree,self).__getitem__(idx)
-        if self is output.base or self is output:
-            # if the output is a view of self, then copy it
+        output = self.view(np.ndarray)[idx]
+        if np.shares_memory(self, output):
+            # if the output shares memory with self, then copy it
             # because working directly with a view of self is dangerous
-            return output.view(np.ndarray).copy()
+            return output.copy()
         else:
             # otherwise, already copied, so return a normal ndarray
-            return output.view(np.ndarray)
+            return output
 
-    def view(self,*args,**kwargs):
-        return super(PrefixSumTree,self).view(np.ndarray).copy().view(*args,**kwargs)
+    def _rebuild_sumtree(self):
+        self._validate_input(self._flat_base)
+        update_entire_prefix_sum_tree(self._flat_base, self._sumtree)
 
+    def copy(self,*args,**kwargs):
+        return PrefixSumTree(self.view(np.ndarray))
+
+    @temporarily_enable_update
+    def fill(self, val):
+        self._validate_input(val)
+        super(PrefixSumTree, self).fill(val)
+        self._rebuild_sumtree()
+
+    def astype(self, *args, **kwargs):
+        return self.view(np.ndarray).astype(*args, **kwargs)
 
     def sumtree(self):
         """
@@ -376,10 +433,10 @@ class PrefixSumTree(np.ndarray):
         """
         axes = self._parse_axis_arg(axis)
         if axes is None:
-            if len(self) > 1:
-                return self._sumtree[1]
+            if keepdims:
+                return self._sumtree[1:2].reshape([1]*self.ndim)
             else:
-                return super(PrefixSumTree, self).sum(keepdims=keepdims)
+                return self._sumtree[1]
         else:
             if axes.min() == self.ndim - len(axes):
                 # strides are contiguous along leaves of sumtree
