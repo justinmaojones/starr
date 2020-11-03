@@ -1,9 +1,10 @@
 import unittest
 import numpy as np
+from prefix_sum_tree import build_sumtree_from_array 
 from prefix_sum_tree import get_prefix_sum_idx
-from prefix_sum_tree import update_prefix_sum_tree
-from prefix_sum_tree import sum as array_sum 
 from prefix_sum_tree import strided_sum
+from prefix_sum_tree import sum as array_sum 
+from prefix_sum_tree import update_prefix_sum_tree
 
 class TestCythonPrefixSumTree(unittest.TestCase):
 
@@ -129,6 +130,44 @@ class TestCythonPrefixSumTree(unittest.TestCase):
                     get_prefix_sum_idx(
                         output, vals_search, base, sumtree)
 
+    def test_inconsistent_array_sizes_raises_error(self):
+        vals = np.arange(4).astype(float)
+        idx = np.arange(4).astype(int)
+        array = np.zeros(9).astype(float)
+        sumtree = np.zeros(10).astype(float)
+        output4 = np.zeros(4).astype(float)
+        output11 = np.zeros(11).astype(float)
+
+        with self.assertRaises(TypeError):
+            update_prefix_sum_tree(idx, vals, array, sumtree)
+
+        with self.assertRaises(TypeError):
+            build_sumtree_from_array(array, sumtree)
+
+        with self.assertRaises(TypeError):
+            get_prefix_sum_idx(output11, vals, array, sumtree)
+
+        with self.assertRaises(TypeError):
+            get_prefix_sum_idx(output4, vals, array, sumtree)
+
+
+    def test_build_sumtree_from_array(self):
+        # since we have already tested update_prefix_sum_tree,
+        # just test consistency between results
+        
+        for i in range(2,16):
+            vals = np.arange(1,i+1).astype(float)
+
+            idx1 = np.arange(i).astype(int)
+            array1 = np.zeros(i).astype(float)
+            sumtree1 = np.zeros(i).astype(float)
+            update_prefix_sum_tree(idx1, vals, array1, sumtree1)
+
+            sumtree2 = np.zeros(i).astype(float)
+            build_sumtree_from_array(vals, sumtree2)
+
+            diff = np.abs(sumtree1 - sumtree2).max()
+            self.assertEqual(diff, 0)
 
 
 if __name__ == '__main__':
