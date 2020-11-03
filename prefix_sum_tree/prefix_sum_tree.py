@@ -137,13 +137,14 @@ class PrefixSumTree(np.ndarray):
         return out_arr.view(np.ndarray)
 
     @temporarily_enable_update
-    def __array_ufunc__(self, ufunc, method, *inputs, out=None, **kwargs):
+    def __array_ufunc__(self, ufunc, method, *inputs, **kwargs):
         inputs = list(inputs)
         for i, x in enumerate(inputs):
             if isinstance(x, PrefixSumTree):
                 inputs[i] = x.view(np.ndarray)
         inputs = tuple(inputs)
-        if out is not None:
+        if 'out' in kwargs and kwargs['out'] is not None:
+            out = kwargs['out']
             if len(out) == 1 and out[0] is self: 
                 # this is an in-place update on self
                 # proceed with update and then rebuild sumtree
