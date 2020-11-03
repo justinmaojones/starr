@@ -17,6 +17,13 @@ ctypedef fused ARRAY_TYPE:
     unsigned long
 
 cdef bint boolean_variable = True
+    
+cdef ARRAY_TYPE disjoint_get(ARRAY_TYPE[:] array, ARRAY_TYPE[:] sumtree, INDEX_TYPE i):
+    cdef INDEX_TYPE n = len(array)
+    if i >= n:
+        return array[i-n]
+    else:
+        return sumtree[i]
 
 def update_prefix_sum_tree(
             INDEX_TYPE[:] idxs,
@@ -24,7 +31,8 @@ def update_prefix_sum_tree(
             ARRAY_TYPE[:] array,
             ARRAY_TYPE[:] sumtree):
 
-    assert array.shape[0] == sumtree.shape[0]
+    if len(array) != len(sumtree):
+        raise TypeError, "array and sumtree must have the same size"
 
     cdef int i # index of idxs and vals
     cdef INDEX_TYPE idx # index of array and sumtree
@@ -42,6 +50,16 @@ def update_prefix_sum_tree(
             sumtree[idx] += diff
             idx -= idx - (idx / 2) # move to parent 
 
+def build_sumtree_from_array(
+            ARRAY_TYPE[:] array,
+            ARRAY_TYPE[:] sumtree):
+
+    if len(array) != len(sumtree):
+        raise TypeError, "array and sumtree must have the same size"
+
+    cdef int i 
+    for i in range(len(array)-1,0,-1):
+        sumtree[i] = disjoint_get(array, sumtree, i*2) + disjoint_get(array, sumtree, i*2+1)
 
 def get_prefix_sum_idx(
             INDEX_TYPE[:] output,
@@ -49,8 +67,10 @@ def get_prefix_sum_idx(
             ARRAY_TYPE[:] array,
             ARRAY_TYPE[:] sumtree):
 
-    assert output.shape[0] == vals.shape[0]
-    assert array.shape[0] == sumtree.shape[0]
+    if len(output) != len(vals):
+        raise TypeError, "output and vals must have the same size"
+    if len(array) != len(sumtree):
+        raise TypeError, "array and sumtree must have the same size"
 
     cdef INDEX_TYPE N = <INDEX_TYPE>array.shape[0] # size of array and sumtree
     cdef INDEX_TYPE M = <INDEX_TYPE>vals.shape[0] # size of output and vals 
@@ -105,13 +125,6 @@ cdef INDEX_TYPE power_of_2(INDEX_TYPE i):
         i >>= 1
         y += 1
     return y
-    
-cdef ARRAY_TYPE get_from_disjoint_sumtree(ARRAY_TYPE[:] array, ARRAY_TYPE[:] sumtree, INDEX_TYPE i):
-    cdef INDEX_TYPE n = len(array)
-    if i >= n:
-        return array[i-n]
-    else:
-        return sumtree[i]
 
 cdef ARRAY_TYPE sum_in_c(ARRAY_TYPE[:] array, ARRAY_TYPE[:] sumtree, INDEX_TYPE a, INDEX_TYPE b):
 
@@ -136,23 +149,23 @@ cdef ARRAY_TYPE sum_in_c(ARRAY_TYPE[:] array, ARRAY_TYPE[:] sumtree, INDEX_TYPE 
         # to the same level in the tree
         if b % 2 == 0:
             # is left node, subtract right
-            subtract += get_from_disjoint_sumtree(array, sumtree, b+1)
+            subtract += disjoint_get(array, sumtree, b+1)
         b //= 2
         
     while (a // 2) != (b // 2):
         if a % 2 == 1:
             # is right node, subtract left
-            subtract += get_from_disjoint_sumtree(array, sumtree, a-1)
+            subtract += disjoint_get(array, sumtree, a-1)
         if b % 2 == 0:
             # is left node, subtract right
-            subtract += get_from_disjoint_sumtree(array, sumtree, b+1)
+            subtract += disjoint_get(array, sumtree, b+1)
         a //= 2
         b //= 2
         
     if wrapped:
         return sumtree[1] - subtract
     else:
-        return get_from_disjoint_sumtree(array, sumtree, a // 2) - subtract
+        return disjoint_get(array, sumtree, a // 2) - subtract
             
 
 def sum(ARRAY_TYPE[:] array, ARRAY_TYPE[:] sumtree, INDEX_TYPE index_from, INDEX_TYPE index_to):
@@ -161,7 +174,7 @@ def sum(ARRAY_TYPE[:] array, ARRAY_TYPE[:] sumtree, INDEX_TYPE index_from, INDEX
 cdef void strided_sum_in_c(ARRAY_TYPE[:] array, ARRAY_TYPE[:] sumtree, ARRAY_TYPE[:] output, INDEX_TYPE stride):
 
     if len(array) // stride not in (len(output), len(output)-1):
-        raise ValueError, "invalid output size"
+        raise TypeError, "invalid output size"
 
     cdef INDEX_TYPE i 
     for i in range(len(output)):
