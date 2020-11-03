@@ -5,6 +5,7 @@ rm -rf prefix_sum_tree/__pycache__
 rm -rf prefix_sum_tree/*.pyc
 rm -rf prefix_sum_tree/experimental/__pycache__
 rm -rf prefix_sum_tree/experimental/*.pyc
+rm -rf .tox
 rm prefix_sum_tree/*.so
 rm prefix_sum_tree/src/_prefix_sum_tree.c
 rm prefix_sum_tree/experimental/*.so
