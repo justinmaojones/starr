@@ -1,8 +1,8 @@
 import numpy as np
 
+from ._cython import build_sumtree_from_array
 from ._cython import get_prefix_sum_idx
 from ._cython import strided_sum 
-from ._cython import update_entire_prefix_sum_tree
 from ._cython import update_prefix_sum_tree
 
 def temporarily_enable_update(func):
@@ -189,7 +189,7 @@ class PrefixSumTree(np.ndarray):
 
     def _rebuild_sumtree(self):
         self._validate_input(self._flat_base)
-        update_entire_prefix_sum_tree(self._flat_base, self._sumtree)
+        build_sumtree_from_array(self._flat_base, self._sumtree)
 
     def copy(self,*args,**kwargs):
         return PrefixSumTree(self.view(np.ndarray))
