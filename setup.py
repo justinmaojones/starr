@@ -10,7 +10,7 @@ setup(
 	author='Justin Mao-Jones',
 	author_email='justinmaojones@gmail.com',
 	install_requires=open('requirements.txt').read(),
-    packages=find_packages(include=['prefix_sum_tree*']),
+    packages=find_packages(include=['prefix_sum_tree','prefix_sum_tree.*']),
     cmdclass={'build_ext': build_ext},
     ext_modules = [ 
         Extension(
@@ -19,6 +19,7 @@ setup(
                 'prefix_sum_tree/src/_prefix_sum_tree.pyx'
             ],
             include_dirs=['.'],
+            language='c',
         ),
         Extension(
             'prefix_sum_tree.experimental._cython',
