@@ -1,9 +1,10 @@
 import unittest
 import numpy as np
+from prefix_sum_tree import build_sumtree_from_array 
 from prefix_sum_tree import get_prefix_sum_idx
-from prefix_sum_tree import update_prefix_sum_tree
-from prefix_sum_tree import sum as array_sum 
 from prefix_sum_tree import strided_sum
+from prefix_sum_tree import sum as array_sum 
+from prefix_sum_tree import update_prefix_sum_tree
 
 class TestCythonPrefixSumTree(unittest.TestCase):
 
@@ -129,6 +130,23 @@ class TestCythonPrefixSumTree(unittest.TestCase):
                     get_prefix_sum_idx(
                         output, vals_search, base, sumtree)
 
+    def test_build_sumtree_from_array(self):
+        # since we have already tested update_prefix_sum_tree,
+        # just test consistency between results
+        
+        for i in range(2,16):
+            vals = np.arange(1,i+1).astype(float)
+
+            idx1 = np.arange(i).astype(int)
+            array1 = np.zeros(i).astype(float)
+            sumtree1 = np.zeros(i).astype(float)
+            update_prefix_sum_tree(idx1, vals, array1, sumtree1)
+
+            sumtree2 = np.zeros(i).astype(float)
+            build_sumtree_from_array(vals, sumtree2)
+
+            diff = np.abs(sumtree1 - sumtree2).max()
+            self.assertEqual(diff, 0)
 
 
 if __name__ == '__main__':
