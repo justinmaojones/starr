@@ -120,7 +120,7 @@ class PrefixSumTree(np.ndarray):
         else:
             # initialize
             self._flat_base = array.view(np.ndarray).ravel()
-            self._indices = np.arange(array.size, dtype=np.int32).reshape(self.shape)
+            self._indices = np.arange(array.size, dtype=np.intp).reshape(array.shape)
             self._sumtree = np.zeros_like(self._flat_base)
             # sumtree needs to be initialize
             self._rebuild_sumtree()
@@ -287,7 +287,7 @@ class PrefixSumTree(np.ndarray):
         prefix_sum = np.ascontiguousarray(prefix_sum,dtype=self.dtype)
         prefix_sum_flat = prefix_sum.ravel()
         # init return array
-        flat_idx = np.zeros(prefix_sum.size,dtype=np.int32)
+        flat_idx = np.zeros(prefix_sum.size,dtype=np.intp)
         # get ids
         get_prefix_sum_idx(flat_idx,prefix_sum_flat,self._flat_base,self._sumtree)
         # output shape should be same as prefix_sum shape
