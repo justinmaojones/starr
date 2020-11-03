@@ -32,7 +32,7 @@ def update_prefix_sum_tree(
             ARRAY_TYPE[:] sumtree):
 
     if len(array) != len(sumtree):
-        raise ValueError, "array and sumtree must have the same size"
+        raise TypeError, "array and sumtree must have the same size"
 
     cdef int i # index of idxs and vals
     cdef INDEX_TYPE idx # index of array and sumtree
@@ -55,7 +55,7 @@ def build_sumtree_from_array(
             ARRAY_TYPE[:] sumtree):
 
     if len(array) != len(sumtree):
-        raise ValueError, "array and sumtree must have the same size"
+        raise TypeError, "array and sumtree must have the same size"
 
     cdef int i 
     for i in range(len(array)-1,0,-1):
@@ -68,9 +68,9 @@ def get_prefix_sum_idx(
             ARRAY_TYPE[:] sumtree):
 
     if len(output) != len(vals):
-        raise ValueError, "output and vals must have the same size"
+        raise TypeError, "output and vals must have the same size"
     if len(array) != len(sumtree):
-        raise ValueError, "array and sumtree must have the same size"
+        raise TypeError, "array and sumtree must have the same size"
 
     cdef INDEX_TYPE N = <INDEX_TYPE>array.shape[0] # size of array and sumtree
     cdef INDEX_TYPE M = <INDEX_TYPE>vals.shape[0] # size of output and vals 
@@ -174,7 +174,7 @@ def sum(ARRAY_TYPE[:] array, ARRAY_TYPE[:] sumtree, INDEX_TYPE index_from, INDEX
 cdef void strided_sum_in_c(ARRAY_TYPE[:] array, ARRAY_TYPE[:] sumtree, ARRAY_TYPE[:] output, INDEX_TYPE stride):
 
     if len(array) // stride not in (len(output), len(output)-1):
-        raise ValueError, "invalid output size"
+        raise TypeError, "invalid output size"
 
     cdef INDEX_TYPE i 
     for i in range(len(output)):

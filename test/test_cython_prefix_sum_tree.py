@@ -130,6 +130,27 @@ class TestCythonPrefixSumTree(unittest.TestCase):
                     get_prefix_sum_idx(
                         output, vals_search, base, sumtree)
 
+    def test_inconsistent_array_sizes_raises_error(self):
+        vals = np.arange(4).astype(float)
+        idx = np.arange(4).astype(int)
+        array = np.zeros(9).astype(float)
+        sumtree = np.zeros(10).astype(float)
+        output4 = np.zeros(4).astype(float)
+        output11 = np.zeros(11).astype(float)
+
+        with self.assertRaises(TypeError):
+            update_prefix_sum_tree(idx, vals, array, sumtree)
+
+        with self.assertRaises(TypeError):
+            build_sumtree_from_array(array, sumtree)
+
+        with self.assertRaises(TypeError):
+            get_prefix_sum_idx(output11, vals, array, sumtree)
+
+        with self.assertRaises(TypeError):
+            get_prefix_sum_idx(output4, vals, array, sumtree)
+
+
     def test_build_sumtree_from_array(self):
         # since we have already tested update_prefix_sum_tree,
         # just test consistency between results
