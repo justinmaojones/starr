@@ -18,15 +18,15 @@ ctypedef fused ARRAY_TYPE:
 
 cdef bint boolean_variable = True
     
-cdef ARRAY_TYPE disjoint_get(ARRAY_TYPE[:] array, ARRAY_TYPE[:] sumtree, INDEX_TYPE i):
-    cdef INDEX_TYPE n = len(array)
+cdef ARRAY_TYPE disjoint_get(ARRAY_TYPE[:] array, ARRAY_TYPE[:] sumtree, Py_ssize_t i):
+    cdef Py_ssize_t n = len(array)
     if i >= n:
         return array[i-n]
     else:
         return sumtree[i]
 
 def update_prefix_sum_tree(
-            INDEX_TYPE[:] idxs,
+            Py_ssize_t[:] idxs,
             ARRAY_TYPE[:] vals,
             ARRAY_TYPE[:] array,
             ARRAY_TYPE[:] sumtree):
@@ -35,9 +35,9 @@ def update_prefix_sum_tree(
         raise TypeError, "array and sumtree must have the same size"
 
     cdef int i # index of idxs and vals
-    cdef INDEX_TYPE idx # index of array and sumtree
-    cdef INDEX_TYPE n = <INDEX_TYPE>array.shape[0] # size of array and sumtree
-    cdef INDEX_TYPE nv = <INDEX_TYPE>vals.shape[0] # size of vals 
+    cdef Py_ssize_t idx # index of array and sumtree
+    cdef Py_ssize_t n = <Py_ssize_t>array.shape[0] # size of array and sumtree
+    cdef Py_ssize_t nv = <Py_ssize_t>vals.shape[0] # size of vals 
     cdef ARRAY_TYPE diff 
 
     for i in range(idxs.shape[0]):
@@ -62,7 +62,7 @@ def build_sumtree_from_array(
         sumtree[i] = disjoint_get(array, sumtree, i*2) + disjoint_get(array, sumtree, i*2+1)
 
 def get_prefix_sum_idx(
-            INDEX_TYPE[:] output,
+            Py_ssize_t[:] output,
             ARRAY_TYPE[:] vals,
             ARRAY_TYPE[:] array,
             ARRAY_TYPE[:] sumtree):
@@ -72,10 +72,10 @@ def get_prefix_sum_idx(
     if len(array) != len(sumtree):
         raise TypeError, "array and sumtree must have the same size"
 
-    cdef INDEX_TYPE N = <INDEX_TYPE>array.shape[0] # size of array and sumtree
-    cdef INDEX_TYPE M = <INDEX_TYPE>vals.shape[0] # size of output and vals 
-    cdef INDEX_TYPE i # current search index 
-    cdef INDEX_TYPE left # index of left subtree
+    cdef Py_ssize_t N = <Py_ssize_t>array.shape[0] # size of array and sumtree
+    cdef Py_ssize_t M = <Py_ssize_t>vals.shape[0] # size of output and vals 
+    cdef Py_ssize_t i # current search index 
+    cdef Py_ssize_t left # index of left subtree
     cdef ARRAY_TYPE prefix_sum # prefix_sum to search for
     cdef ARRAY_TYPE left_val # prefix_sum of left subtree
 
@@ -119,14 +119,14 @@ def get_prefix_sum_idx(
 
     return output
 
-cdef INDEX_TYPE power_of_2(INDEX_TYPE i):
-    cdef INDEX_TYPE y = 0
+cdef Py_ssize_t power_of_2(Py_ssize_t i):
+    cdef Py_ssize_t y = 0
     while i > 0:
         i >>= 1
         y += 1
     return y
 
-cdef ARRAY_TYPE sum_in_c(ARRAY_TYPE[:] array, ARRAY_TYPE[:] sumtree, INDEX_TYPE a, INDEX_TYPE b):
+cdef ARRAY_TYPE sum_in_c(ARRAY_TYPE[:] array, ARRAY_TYPE[:] sumtree, Py_ssize_t a, Py_ssize_t b):
 
     b -= 1 # not-inclusive of right end-point
     if a == b:
@@ -134,7 +134,7 @@ cdef ARRAY_TYPE sum_in_c(ARRAY_TYPE[:] array, ARRAY_TYPE[:] sumtree, INDEX_TYPE 
     if a > b:
         return 0
     
-    cdef INDEX_TYPE n = len(array)
+    cdef Py_ssize_t n = len(array)
     a += n
     b += n
     cdef ARRAY_TYPE subtract = 0
@@ -168,19 +168,19 @@ cdef ARRAY_TYPE sum_in_c(ARRAY_TYPE[:] array, ARRAY_TYPE[:] sumtree, INDEX_TYPE 
         return disjoint_get(array, sumtree, a // 2) - subtract
             
 
-def sum(ARRAY_TYPE[:] array, ARRAY_TYPE[:] sumtree, INDEX_TYPE index_from, INDEX_TYPE index_to):
+def sum(ARRAY_TYPE[:] array, ARRAY_TYPE[:] sumtree, Py_ssize_t index_from, Py_ssize_t index_to):
     return sum_in_c(array, sumtree, index_from, index_to)
 
-cdef void strided_sum_in_c(ARRAY_TYPE[:] array, ARRAY_TYPE[:] sumtree, ARRAY_TYPE[:] output, INDEX_TYPE stride):
+cdef void strided_sum_in_c(ARRAY_TYPE[:] array, ARRAY_TYPE[:] sumtree, ARRAY_TYPE[:] output, Py_ssize_t stride):
 
     if len(array) // stride not in (len(output), len(output)-1):
         raise TypeError, "invalid output size"
 
-    cdef INDEX_TYPE i 
+    cdef Py_ssize_t i 
     for i in range(len(output)):
         output[i] = sum_in_c(array, sumtree, stride*i, min(stride*(i+1),len(array)))
 
-def strided_sum(ARRAY_TYPE[:] array, ARRAY_TYPE[:] sumtree, INDEX_TYPE stride):
+def strided_sum(ARRAY_TYPE[:] array, ARRAY_TYPE[:] sumtree, Py_ssize_t stride):
     
     # allows for strides that don't divide evenly into length of array
     n = len(array) // stride

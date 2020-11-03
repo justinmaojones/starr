@@ -18,7 +18,7 @@ class TestCythonPrefixSumTree(unittest.TestCase):
         #   /  \
         #  6    7
 
-        indices = np.array([0,1,2,3,4],dtype=int)
+        indices = np.array([0,1,2,3,4],dtype=np.intp)
         values = np.array([3,4,5,6,7],dtype=float)
         base = np.zeros_like(values)
         sum_tree = np.zeros_like(values)
@@ -70,9 +70,7 @@ class TestCythonPrefixSumTree(unittest.TestCase):
 
     def test_valid_types(self):
         INDEX_TYPES = [
-            np.int16,
-            np.int32,
-            np.int64,
+            np.intp,
         ]
 
         ARRAY_TYPES = [
@@ -103,7 +101,7 @@ class TestCythonPrefixSumTree(unittest.TestCase):
 
     def test_invalid_array_types(self):
         INDEX_TYPES = [
-            np.int32,
+            np.intp,
         ]
 
         ARRAY_TYPES = [
@@ -132,11 +130,11 @@ class TestCythonPrefixSumTree(unittest.TestCase):
 
     def test_inconsistent_array_sizes_raises_error(self):
         vals = np.arange(4).astype(float)
-        idx = np.arange(4).astype(int)
+        idx = np.arange(4).astype(np.intp)
         array = np.zeros(9).astype(float)
         sumtree = np.zeros(10).astype(float)
-        output4 = np.zeros(4).astype(float)
-        output11 = np.zeros(11).astype(float)
+        output4 = np.zeros(4).astype(np.intp)
+        output11 = np.zeros(11).astype(np.intp)
 
         with self.assertRaises(TypeError):
             update_prefix_sum_tree(idx, vals, array, sumtree)
@@ -158,7 +156,7 @@ class TestCythonPrefixSumTree(unittest.TestCase):
         for i in range(2,16):
             vals = np.arange(1,i+1).astype(float)
 
-            idx1 = np.arange(i).astype(int)
+            idx1 = np.arange(i).astype(np.intp)
             array1 = np.zeros(i).astype(float)
             sumtree1 = np.zeros(i).astype(float)
             update_prefix_sum_tree(idx1, vals, array1, sumtree1)
