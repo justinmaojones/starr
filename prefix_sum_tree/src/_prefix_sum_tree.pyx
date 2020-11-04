@@ -34,6 +34,10 @@ def update_prefix_sum_tree(
     cdef Py_ssize_t nv = <Py_ssize_t>vals.shape[0] # size of vals 
     cdef ARRAY_TYPE diff 
 
+    for i in range(len(vals)):
+        if vals[i] < 0:
+            raise ValueError, "vals must be non-negative"
+
     for i in range(idxs.shape[0]):
         # assumes array and sumtree are the same size, where sumtree is a prefix sum tree of array
         idx = idxs[i]
@@ -53,6 +57,9 @@ def build_sumtree_from_array(
 
     cdef int i 
     for i in range(len(array)-1,0,-1):
+        if array[i] < 0:
+            raise ValueError, "array elements must be non-negative"
+
         sumtree[i] = disjoint_get(array, sumtree, i*2) + disjoint_get(array, sumtree, i*2+1)
 
 def get_prefix_sum_idx(

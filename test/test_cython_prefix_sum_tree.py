@@ -148,6 +148,15 @@ class TestCythonPrefixSumTree(unittest.TestCase):
         with self.assertRaises(TypeError):
             get_prefix_sum_idx(output4, vals, array, sumtree)
 
+    def test_negative_value_error(self):
+        vals = -np.arange(4).astype(float)
+        idx = np.arange(4).astype(np.intp)
+        array = np.zeros(10).astype(float)
+        sumtree = np.zeros(10).astype(float)
+
+        with self.assertRaises(ValueError):
+            update_prefix_sum_tree(idx, vals, array, sumtree)
+
 
     def test_build_sumtree_from_array(self):
         # since we have already tested update_prefix_sum_tree,
@@ -167,6 +176,12 @@ class TestCythonPrefixSumTree(unittest.TestCase):
             diff = np.abs(sumtree1 - sumtree2).max()
             self.assertEqual(diff, 0)
 
+    def test_negative_value_error_in_build(self):
+        array = -np.arange(10).astype(float)
+        sumtree = np.zeros(10).astype(float)
+
+        with self.assertRaises(ValueError):
+            build_sumtree_from_array(array, sumtree)
 
 if __name__ == '__main__':
     unittest.main()

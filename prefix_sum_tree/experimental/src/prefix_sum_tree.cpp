@@ -1,4 +1,5 @@
 #include <math.h>
+#include <stdexcept>
 #include <stdio.h>
 #include "prefix_sum_tree.h"
 
@@ -10,6 +11,10 @@ namespace prefix_sum_tree {
             double* array, 
             const int n, 
             double* sumtree) {
+
+        if(val < 0){
+            throw std::invalid_argument("val must be non-negative");
+        }
 
         // assumes array and sumtree are the same size, where sumtree is a prefix sum tree of array
         array += idx;
