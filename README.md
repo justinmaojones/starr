@@ -1,3 +1,5 @@
+[![Coverage](docs/badges/coverage.svg)](docs/badges/coverage.svg)
+
 # CythonSumTree 
 
 Fast sum segment trees in C (via Cython) for Numpy arrays in Python.  Inspired by [Prioritized Experience Replay](https://arxiv.org/abs/1511.05952).
