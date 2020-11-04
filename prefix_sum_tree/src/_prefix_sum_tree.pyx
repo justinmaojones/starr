@@ -57,6 +57,9 @@ def build_sumtree_from_array(
 
     cdef int i 
     for i in range(len(array)-1,0,-1):
+        if array[i] < 0:
+            raise ValueError, "array elements must be non-negative"
+
         sumtree[i] = disjoint_get(array, sumtree, i*2) + disjoint_get(array, sumtree, i*2+1)
 
 def get_prefix_sum_idx(
