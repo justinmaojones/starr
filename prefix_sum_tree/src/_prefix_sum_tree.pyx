@@ -127,7 +127,7 @@ cdef Py_ssize_t power_of_2(Py_ssize_t i):
         y += 1
     return y
 
-cdef ARRAY_TYPE sum_in_c(ARRAY_TYPE[:] array, ARRAY_TYPE[:] sumtree, Py_ssize_t a, Py_ssize_t b):
+cdef ARRAY_TYPE sum_over_in_c(ARRAY_TYPE[:] array, ARRAY_TYPE[:] sumtree, Py_ssize_t a, Py_ssize_t b):
 
     b -= 1 # not-inclusive of right end-point
     if a == b:
@@ -169,8 +169,8 @@ cdef ARRAY_TYPE sum_in_c(ARRAY_TYPE[:] array, ARRAY_TYPE[:] sumtree, Py_ssize_t 
         return disjoint_get(array, sumtree, a // 2) - subtract
             
 
-def sum(ARRAY_TYPE[:] array, ARRAY_TYPE[:] sumtree, Py_ssize_t index_from, Py_ssize_t index_to):
-    return sum_in_c(array, sumtree, index_from, index_to)
+def sum_over(ARRAY_TYPE[:] array, ARRAY_TYPE[:] sumtree, Py_ssize_t index_from, Py_ssize_t index_to):
+    return sum_over_in_c(array, sumtree, index_from, index_to)
 
 cdef void strided_sum_in_c(ARRAY_TYPE[:] array, ARRAY_TYPE[:] sumtree, ARRAY_TYPE[:] output, Py_ssize_t stride):
 
@@ -179,7 +179,7 @@ cdef void strided_sum_in_c(ARRAY_TYPE[:] array, ARRAY_TYPE[:] sumtree, ARRAY_TYP
 
     cdef Py_ssize_t i 
     for i in range(len(output)):
-        output[i] = sum_in_c(array, sumtree, stride*i, min(stride*(i+1),len(array)))
+        output[i] = sum_over_in_c(array, sumtree, stride*i, min(stride*(i+1),len(array)))
 
 def strided_sum(ARRAY_TYPE[:] array, ARRAY_TYPE[:] sumtree, Py_ssize_t stride):
     
