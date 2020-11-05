@@ -1,3 +1,4 @@
+[![Python](docs/badges/python.svg)](docs/badges/python.svg)
 [![Coverage](docs/badges/coverage.svg)](docs/badges/coverage.svg)
 
 # CythonSumTree 
