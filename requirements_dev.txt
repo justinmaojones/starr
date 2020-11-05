@@ -1,4 +1,5 @@
 coverage
 coverage-badge
+pybadges
 pytest
 tox
