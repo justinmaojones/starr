@@ -1,5 +1,6 @@
-[![Python](docs/badges/python.svg)](docs/badges/python.svg)
-[![Coverage](docs/badges/coverage.svg)](docs/badges/coverage.svg)
+![License](https://img.shields.io/badge/license-MIT-green)
+![Python](docs/badges/python.svg)
+![Coverage](docs/badges/coverage.svg)
 
 # CythonSumTree 
 
