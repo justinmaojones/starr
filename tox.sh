@@ -1,16 +1,18 @@
 #!/bin/bash
 
 sh clean.sh 
+BUILD_STATUS=docs/badges/build.svg
 if (tox); then
     python -m pybadges \
         --left-text=build \
         --right-text=passing \
         --right-color=green \
-        > docs/badges/build.svg
+        > $BUILD_STATUS
 else
     python -m pybadges \
         --left-text=build \
         --right-text=failing \
         --right-color='#c00' \
-        > docs/badges/build.svg
+        > $BUILD_STATUS
 fi
+git add $BUILD_STATUS
