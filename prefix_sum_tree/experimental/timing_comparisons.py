@@ -127,7 +127,7 @@ if __name__ == '__main__':
 
     import os
     dir_path = os.path.dirname(os.path.realpath(__file__))
-    with open(os.path.join(dir_path,'README.md','w') as f:
+    with open(os.path.join(dir_path,'README.md'),'w') as f:
         f.write('# Benchmarks\n\n')
         f.write(df.to_markdown())
         print('\n' + df.to_markdown() + '\n')
