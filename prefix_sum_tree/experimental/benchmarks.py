@@ -1,10 +1,11 @@
 import prefix_sum_tree
 import prefix_sum_tree.experimental
+import pandas as pd
 import numpy as np
 import timeit
 
 N = int(1e6) # size of base array
-K = int(1e3) # number of indices to set
+K = int(1e2) # number of indices to set
 S = int(1e2) # number of indices to sample
 np.random.seed(1)
 IDX = np.random.choice(N,size=K).astype(np.int32)
@@ -92,51 +93,42 @@ class CPlusPlus(TimingTest):
     def test_sum(self):
         return self.sumtree[1]
 
-def test_set(class_name, num_execs = 1000):
+def benchmark(class_name, func_name, num_execs=100):
     setup = "from __main__ import {class_name}; timing_test = {class_name}()".format(**locals())
-    total_duration = timeit.timeit("timing_test.test_set()", setup=setup, number=num_execs)
-    duration_str = u"%0.1f \u03BCs" % (total_duration/num_execs*1e6)
-    print("{class_name}: {duration_str}".format(**locals()))
-
-def test_sample(class_name, num_execs = 1000):
-    setup = "from __main__ import {class_name}; timing_test = {class_name}()".format(**locals())
-    total_duration = timeit.timeit("timing_test.test_sample()", setup=setup, number=num_execs)
+    total_duration = timeit.timeit("timing_test.{func_name}()".format(**locals()), setup=setup, number=num_execs)
     duration_str = u"%0.0f \u03BCs" % (total_duration/num_execs*1e6)
-    print("{class_name}: {duration_str}".format(**locals()))
-
-def test_sum(class_name, num_execs = 1000):
-    setup = "from __main__ import {class_name}; timing_test = {class_name}()".format(**locals())
-    total_duration = timeit.timeit("timing_test.test_sum()", setup=setup, number=num_execs)
-    duration_str = u"%0.0f \u03BCs" % (total_duration/num_execs*1e6)
-    print("{class_name}: {duration_str}".format(**locals()))
-
+    return duration_str
 
 if __name__ == '__main__':
 
-    # encoding=utf8
-    #import sys
-    #reload(sys)
-    #sys.setdefaultencoding('utf8')
+    test_funcs = {
+        'set %d values' % K: 'test_set',
+        'priority-sample %d values' % S: 'test_sample',
+        'sum entire array': 'test_sum',
+    }
 
-    print("\narray-size: %d %s" % (N, str(VALS.dtype))) 
+    class_names = [
+        'NDArray',
+        'PrefixSumTree',
+        'CPlusPlus',
+        'PythonList',
+    ]
 
-    print("\n# __set__ %d values:\n" % K)
-    test_set("NDArray", 1000)
-    test_set("PrefixSumTree", 1000)
-    test_set("CPlusPlus", 1000)
-    test_set("PythonList", 100)
+    all_output = []
+    for class_name in class_names:
+        output = {'class': class_name}
+        for fname in test_funcs:
+            output[fname] = benchmark(class_name, test_funcs[fname])
+        all_output.append(output)
 
-    print("\n# priority-sample %d values:\n" % S)
-    test_sample("NDArray", 100)
-    test_sample("PrefixSumTree", 1000)
-    test_sample("CPlusPlus", 1000)
-    test_sample("PythonList", 100)
+    df = pd.DataFrame(all_output).set_index('class',drop=True)
+    df['array size'] = N
+    df['dtype'] = VALS.dtype
 
-    print("\n# sum entire array:\n")
-    test_sum("NDArray", 1000)
-    test_sum("PrefixSumTree", 1000)
-    test_sum("CPlusPlus", 1000)
-    test_sum("PythonList", 1000)
-
-    print('')
+    import os
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    with open(os.path.join(dir_path,'README.md'),'w') as f:
+        f.write('# Benchmarks\n\n')
+        f.write(df.to_markdown())
+        print('\n' + df.to_markdown() + '\n')
 

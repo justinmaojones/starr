@@ -3,7 +3,7 @@ import numpy as np
 from prefix_sum_tree import build_sumtree_from_array 
 from prefix_sum_tree import get_prefix_sum_idx
 from prefix_sum_tree import strided_sum
-from prefix_sum_tree import sum as array_sum 
+from prefix_sum_tree import sum_over 
 from prefix_sum_tree import update_prefix_sum_tree
 
 class TestCythonPrefixSumTree(unittest.TestCase):
@@ -59,7 +59,7 @@ class TestCythonPrefixSumTree(unittest.TestCase):
         # test sum
         for i in range(len(values)):
             for j in range(i,len(values)+1):
-                self.assertEqual(array_sum(base,sum_tree,i,j), values[i:j].sum())
+                self.assertEqual(sum_over(base,sum_tree,i,j), values[i:j].sum())
 
         # test strided sum
         self.assertEqual(np.abs(strided_sum(base,sum_tree,1)-values).max(), 0)
@@ -148,6 +148,15 @@ class TestCythonPrefixSumTree(unittest.TestCase):
         with self.assertRaises(TypeError):
             get_prefix_sum_idx(output4, vals, array, sumtree)
 
+    def test_negative_value_error(self):
+        vals = -np.arange(4).astype(float)
+        idx = np.arange(4).astype(np.intp)
+        array = np.zeros(10).astype(float)
+        sumtree = np.zeros(10).astype(float)
+
+        with self.assertRaises(ValueError):
+            update_prefix_sum_tree(idx, vals, array, sumtree)
+
 
     def test_build_sumtree_from_array(self):
         # since we have already tested update_prefix_sum_tree,
@@ -167,6 +176,12 @@ class TestCythonPrefixSumTree(unittest.TestCase):
             diff = np.abs(sumtree1 - sumtree2).max()
             self.assertEqual(diff, 0)
 
+    def test_negative_value_error_in_build(self):
+        array = -np.arange(10).astype(float)
+        sumtree = np.zeros(10).astype(float)
+
+        with self.assertRaises(ValueError):
+            build_sumtree_from_array(array, sumtree)
 
 if __name__ == '__main__':
     unittest.main()

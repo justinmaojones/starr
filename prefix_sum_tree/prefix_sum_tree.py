@@ -166,15 +166,10 @@ class PrefixSumTree(np.ndarray):
         while len(update_stack) > 0:
             update_stack.pop().setflags(write=val)
 
-    def _validate_input(self,values):
-        if np.min(values) < 0:
-            raise ValueError("values must non-negative")
-
     def __setitem__(self,idx,val):
         # TODO: there's probably a better way of converting idx to flat idx 
         indices = np.ascontiguousarray(self._indices[idx]).ravel()
         values = np.ascontiguousarray(val,dtype=self._flat_base.dtype).ravel()
-        self._validate_input(values)
         update_prefix_sum_tree(
                 indices, values, self._flat_base, self._sumtree)
 
