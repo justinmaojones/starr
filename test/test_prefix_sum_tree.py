@@ -158,29 +158,6 @@ class TestPrefixSumTree(unittest.TestCase):
         x = PrefixSumTree(np.array([[0,1],[2,3]]).astype("int32"))
         self.assertEqual(x.size,4)
 
-    def IGNORE_test_transformation_does_not_affect_prefix_sum_tree(self):
-        x = PrefixSumTree(np.array([0,1,2,3]).astype("int32"))
-        x2 = x+1
-        # when a transformation is applied to a PrefixSumTree object, it is assumed that
-        # we do not want a new PrefixSumTree object (which could result in a large
-        # number of unwanted prefix sum tree updates)...and thus the transformation
-        # is applied to the underlying array object, and an NDArray is returned
-        self.assertFalse(isinstance(x2,PrefixSumTree))
-
-        # underlying x and sumtree is unchanged
-        self.assertEqual(x2[0],1)
-        self.assertEqual(x[0],0)
-        self.assertEqual(x._sumtree[1],6)
-
-        # ditto for in-place assignment operators
-        x3 = x
-        x3 += 10
-        self.assertTrue(isinstance(x,PrefixSumTree))
-        self.assertFalse(isinstance(x3,PrefixSumTree))
-        self.assertEqual(x3[0],10)
-        self.assertEqual(x[0],0)
-        self.assertEqual(x._sumtree[1],6)
-
     def test_set(self):
         # [[0,1],
         #  [2,3],
