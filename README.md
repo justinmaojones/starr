@@ -1,3 +1,8 @@
+![Build](docs/badges/build.svg)
+![License](https://img.shields.io/badge/license-MIT-green)
+![Python](docs/badges/python.svg)
+![Coverage](docs/badges/coverage.svg)
+
 # CythonSumTree 
 
 Fast sum segment trees in C (via Cython) for Numpy arrays in Python.  Inspired by [Prioritized Experience Replay](https://arxiv.org/abs/1511.05952).

@@ -1,9 +1,10 @@
 import unittest
 import numpy as np
+from prefix_sum_tree import build_sumtree_from_array 
 from prefix_sum_tree import get_prefix_sum_idx
-from prefix_sum_tree import update_prefix_sum_tree
-from prefix_sum_tree import sum as array_sum 
 from prefix_sum_tree import strided_sum
+from prefix_sum_tree import sum_over 
+from prefix_sum_tree import update_prefix_sum_tree
 
 class TestCythonPrefixSumTree(unittest.TestCase):
 
@@ -17,7 +18,7 @@ class TestCythonPrefixSumTree(unittest.TestCase):
         #   /  \
         #  6    7
 
-        indices = np.array([0,1,2,3,4],dtype=int)
+        indices = np.array([0,1,2,3,4],dtype=np.intp)
         values = np.array([3,4,5,6,7],dtype=float)
         base = np.zeros_like(values)
         sum_tree = np.zeros_like(values)
@@ -58,7 +59,7 @@ class TestCythonPrefixSumTree(unittest.TestCase):
         # test sum
         for i in range(len(values)):
             for j in range(i,len(values)+1):
-                self.assertEqual(array_sum(base,sum_tree,i,j), values[i:j].sum())
+                self.assertEqual(sum_over(base,sum_tree,i,j), values[i:j].sum())
 
         # test strided sum
         self.assertEqual(np.abs(strided_sum(base,sum_tree,1)-values).max(), 0)
@@ -69,9 +70,7 @@ class TestCythonPrefixSumTree(unittest.TestCase):
 
     def test_valid_types(self):
         INDEX_TYPES = [
-            np.int16,
-            np.int32,
-            np.int64,
+            np.intp,
         ]
 
         ARRAY_TYPES = [
@@ -102,7 +101,7 @@ class TestCythonPrefixSumTree(unittest.TestCase):
 
     def test_invalid_array_types(self):
         INDEX_TYPES = [
-            np.int32,
+            np.intp,
         ]
 
         ARRAY_TYPES = [
@@ -129,7 +128,62 @@ class TestCythonPrefixSumTree(unittest.TestCase):
                     get_prefix_sum_idx(
                         output, vals_search, base, sumtree)
 
+    def test_inconsistent_array_sizes_raises_error(self):
+        vals = np.arange(4).astype(float)
+        idx = np.arange(4).astype(np.intp)
+        array = np.zeros(9).astype(float)
+        sumtree = np.zeros(10).astype(float)
+        output4 = np.zeros(4).astype(np.intp)
+        output11 = np.zeros(11).astype(np.intp)
 
+        with self.assertRaises(TypeError):
+            update_prefix_sum_tree(idx, vals, array, sumtree)
+
+        with self.assertRaises(TypeError):
+            build_sumtree_from_array(array, sumtree)
+
+        with self.assertRaises(TypeError):
+            get_prefix_sum_idx(output11, vals, array, sumtree)
+
+        with self.assertRaises(TypeError):
+            get_prefix_sum_idx(output4, vals, array, sumtree)
+
+    def test_negative_value_error(self):
+        vals = -np.arange(4).astype(float)
+        idx = np.arange(4).astype(np.intp)
+        array = np.zeros(10).astype(float)
+        sumtree = np.zeros(10).astype(float)
+
+        with self.assertRaises(ValueError):
+            update_prefix_sum_tree(idx, vals, array, sumtree)
+
+
+    def test_build_sumtree_from_array(self):
+        # since we have already tested update_prefix_sum_tree,
+        # just test consistency between results
+        
+        for i in range(2,16):
+            vals = np.arange(1,i+1).astype(float)
+
+            idx1 = np.arange(i).astype(np.intp)
+            array1 = np.zeros(i).astype(float)
+            sumtree1 = np.zeros(i).astype(float)
+            update_prefix_sum_tree(idx1, vals, array1, sumtree1)
+
+            sumtree2 = np.zeros(i).astype(float)
+            build_sumtree_from_array(vals, sumtree2)
+
+            diff = np.abs(sumtree1 - sumtree2).max()
+            self.assertEqual(sumtree1[1], vals.sum())
+            self.assertEqual(sumtree2[1], vals.sum())
+            self.assertEqual(diff, 0)
+
+    def test_negative_value_error_in_build(self):
+        array = -np.arange(10).astype(float)
+        sumtree = np.zeros(10).astype(float)
+
+        with self.assertRaises(ValueError):
+            build_sumtree_from_array(array, sumtree)
 
 if __name__ == '__main__':
     unittest.main()

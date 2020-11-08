@@ -1,0 +1,7 @@
+coverage
+coverage-badge
+pandas
+pybadges
+pytest
+tabulate
+tox

@@ -1,8 +1,21 @@
 import numpy as np
 
+from ._cython import build_sumtree_from_array 
 from ._cython import get_prefix_sum_idx
 from ._cython import strided_sum 
 from ._cython import update_prefix_sum_tree
+
+
+def _repr_with_new_class_name(class_name, array):
+    add_spaces = len(class_name) - len('array')
+    array_repr = repr(array).replace('array',class_name)
+    if add_spaces < 0:
+        return array_repr.replace('\n'+' '*abs(add_spaces),'\n')
+    elif add_spaces == 0:
+        return array_repr
+    else:
+        return array_repr.replace('\n','\n'+' '*add_spaces)
+
 
 class PrefixSumTree(object):
     """
@@ -79,14 +92,13 @@ class PrefixSumTree(object):
         else:
             self._init_from_shape(shape_or_array, dtype)
 
-        self.size = self._array.size
-
     def _init_from_prefix_sum_tree(self, prefix_sum_tree, dtype=None):
         if dtype is None:
             # share memory
             self.dtype = prefix_sum_tree.dtype
             self._array = prefix_sum_tree._array
             self._flat_base = prefix_sum_tree._flat_base
+            self._indices = prefix_sum_tree._indices
             self._sumtree = prefix_sum_tree._sumtree
         else:
             # make a copy
@@ -95,32 +107,40 @@ class PrefixSumTree(object):
     def _init_from_ndarray(self, array, dtype=None):
         if array.size <= 1:
             raise ValueError("input to PrefixSumTree must have shape with at least 2 elements")
-        self.dtype = array.dtype if dtype is None else dtype
-        self._array = np.zeros(array.shape, dtype=self.dtype)
+        dtype = array.dtype if dtype is None else dtype
+        self.dtype = dtype
+        self._array = array.astype(dtype, copy=True)
         self._flat_base = self._array.ravel() # shared memory
-        self._indices = np.arange(array.size, dtype=np.int32).reshape(array.shape)
+        self._indices = np.arange(array.size, dtype=np.intp).reshape(array.shape)
         self._sumtree = np.zeros_like(self._flat_base)
-        self[:] = array
+        self._rebuild_sumtree()
 
     def _init_from_shape(self, shape, dtype=None):
-        self.dtype = float if dtype is None else dtype
+        dtype = float if dtype is None else dtype
+        self.dtype = dtype
         array = np.zeros(shape, dtype=self.dtype)
         if array.size <= 1:
             raise ValueError("input to PrefixSumTree must have shape with at least 2 elements")
         self._array = array
         self._flat_base = self._array.ravel() # shared memory
-        self._indices = np.arange(array.size, dtype=np.int32).reshape(array.shape)
+        self._indices = np.arange(array.size, dtype=np.intp).reshape(array.shape)
         self._sumtree = np.zeros_like(self._flat_base)
 
-    def _validate_input(self,values):
-        if values.min() < 0:
-            raise ValueError("values must non-negative")
+    def _rebuild_sumtree(self):
+        build_sumtree_from_array(self._flat_base, self._sumtree)
+
+    def __array__(self,dtype=None):
+        if dtype is None:
+            out_array = self._array
+            out_array.setflags(write=False)
+            return out_array
+        else:
+            return self._array.astype(dtype, copy=True)
 
     def __setitem__(self,idx,val):
         # TODO: there's probably a better way of converting idx to flat idx 
         indices = np.ascontiguousarray(self._indices[idx]).ravel()
         values = np.ascontiguousarray(val,dtype=self._flat_base.dtype).ravel()
-        self._validate_input(values)
         update_prefix_sum_tree(
                 indices, values, self._flat_base, self._sumtree)
 
@@ -133,17 +153,79 @@ class PrefixSumTree(object):
             # otherwise, already copied, so return a normal ndarray
             return output
 
-    def array(self):
-        return self._array.copy()
+    def __repr__(self):
+        return _repr_with_new_class_name(self.__class__.__name__, self._array)
 
-    def sumtree(self):
+    @property
+    def ndim(self):
+        return self._array.ndim
+
+    @property
+    def size(self):
+        return self._array.size
+
+    def min(self):
+        return self._array.min()
+
+    def max(self):
+        return self._array.max()
+
+    def reshape(self, shape, inplace=False):
+        if inplace == True:
+            self._array = self._array.reshape(shape)
+            self._indices = self._indices.reshape(shape)
+            return self
+        else:
+            return PrefixSumTree(self).reshape(shape, inplace=True)
+
+    @property
+    def shape(self):
+        return self._array.shape
+
+    def array(self, copy=True):
         """
-        Returns a copy of the sumtree. 
+        Returns the underlying array.
+
+        Parameters
+        ----------
+        copy : boolean 
+            Defaults to True.  If True, returns a copy of the array.
+            Otherwise returns the array.
+
+        Returns
+        -------
+        array : ndarray
+            The array object maintained by ``PrefixSumTree``.
+
+        Notes
+        -----
+        Use caution when using the array directly (instead of a copy),
+        as changes can corrupt the integrity of ``PrefixSumTree`` operations. 
+        """
+        if copy:
+            return self._array.copy()
+        else:
+            return self._array
+
+    def sumtree(self, copy=True):
+        """
+        Returns the underlying sumtree.
+
+        Parameters
+        ----------
+        copy : boolean 
+            Defaults to True.  If True, returns a copy of the sumtree.
+            Otherwise returns the sumtree.
 
         Returns
         -------
         sumtree : ndarray
-            A copy of the (flat) sumtree object maintained by ``PrefixSumTree``.
+            The (flat) sumtree object maintained by ``PrefixSumTree``.
+
+        Notes
+        -----
+        Use caution when using the sumtree directly (instead of a copy),
+        as changes can corrupt the integrity of ``PrefixSumTree`` operations. 
 
         Examples
         --------
@@ -159,7 +241,10 @@ class PrefixSumTree(object):
         >>> sum_tree_from_2d_array.sumtree()
         array([ 0., 10.,  3.,  7.], dtype=float32)
         """
-        return self._sumtree.copy()
+        if copy:
+            return self._sumtree.copy()
+        else:
+            return self._sumtree
     
     def get_prefix_sum_id(self,prefix_sum,flatten_indices=False):
         """
@@ -219,7 +304,7 @@ class PrefixSumTree(object):
         prefix_sum = np.ascontiguousarray(prefix_sum,dtype=self.dtype)
         prefix_sum_flat = prefix_sum.ravel()
         # init return array
-        flat_idx = np.zeros(prefix_sum.size,dtype=np.int32)
+        flat_idx = np.zeros(prefix_sum.size,dtype=np.intp)
         # get ids
         get_prefix_sum_idx(flat_idx,prefix_sum_flat,self._flat_base,self._sumtree)
         # output shape should be same as prefix_sum shape
@@ -231,15 +316,6 @@ class PrefixSumTree(object):
             return output 
         else:
             return np.unravel_index(output,self.shape)
-
-    def reshape(self, shape, inplace=False):
-        if inplace == True:
-            self._array = self._array.reshape(shape)
-            self._indices = self._indices.reshape(shape)
-            return self
-        else:
-            return PrefixSumTree(self).reshape(shape, inplace=True)
-
 
     def sample(self,nsamples=1,flatten_indices=False):
         """
@@ -298,9 +374,6 @@ class PrefixSumTree(object):
         # sample priority values in the cumulative sum
         vals = (self.sum() * np.random.rand(nsamples)).astype(self.dtype)
         return self.get_prefix_sum_id(vals,flatten_indices)
-
-    def shape(self):
-        return self._array.shape
 
     def _parse_axis_arg(self,axis):
         if axis is None:
