@@ -4,10 +4,13 @@ from Cython.Distutils import build_ext
 import numpy
 
 requirements = open('requirements.txt').read(),
-requirements_dev = open('requirements_dev.txt').read(),
-extras_require = {
-    'dev': requirements_dev
-}
+try:
+    requirements_dev = open('requirements_dev.txt').read(),
+    extras_require = {
+        'dev': requirements_dev
+    }
+except:
+    extras_require = None
 
 setup(
 	name='prefix_sum_tree',
