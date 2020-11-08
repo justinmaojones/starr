@@ -55,11 +55,12 @@ def build_sumtree_from_array(
     if len(array) != len(sumtree):
         raise TypeError, "array and sumtree must have the same size"
 
+    if min(array) < 0:
+        raise ValueError, "array elements must be non-negative"
+
+    # iterate upwards through tree, stopping at root node at sumtree[1]
     cdef int i 
     for i in range(len(array)-1,0,-1):
-        if array[i] < 0:
-            raise ValueError, "array elements must be non-negative"
-
         sumtree[i] = disjoint_get(array, sumtree, i*2) + disjoint_get(array, sumtree, i*2+1)
 
 def get_prefix_sum_idx(

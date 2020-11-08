@@ -1,6 +1,7 @@
 import unittest
 import numpy as np
 from prefix_sum_tree import PrefixSumTree
+from prefix_sum_tree.prefix_sum_tree import _repr_with_new_class_name
 
 class TestPrefixSumTree(unittest.TestCase):
 
@@ -8,14 +9,26 @@ class TestPrefixSumTree(unittest.TestCase):
         prefix_sum_tree = PrefixSumTree(2)
         self.assertTrue(isinstance(prefix_sum_tree,PrefixSumTree))
         self.assertEqual(prefix_sum_tree.size,2)
-        self.assertEqual(prefix_sum_tree.min(),0)
-        self.assertEqual(prefix_sum_tree.max(),0)
+        self.assertEqual(prefix_sum_tree._array.min(),0)
+        self.assertEqual(prefix_sum_tree._array.max(),0)
+        self.assertEqual(prefix_sum_tree._sumtree.min(),0)
+        self.assertEqual(prefix_sum_tree._sumtree.max(),0)
         self.assertEqual(prefix_sum_tree.dtype,float)
+        self.assertTrue(np.shares_memory(prefix_sum_tree._array, prefix_sum_tree._flat_base))
 
     def test_array_creation_from_shape_inputs_and_dtype(self):
         prefix_sum_tree = PrefixSumTree(2,dtype=int)
         self.assertTrue(isinstance(prefix_sum_tree,PrefixSumTree))
+        self.assertEqual(prefix_sum_tree.size,2)
         self.assertEqual(prefix_sum_tree.dtype,int)
+        self.assertEqual(prefix_sum_tree._array.min(),0)
+        self.assertEqual(prefix_sum_tree._array.max(),0)
+        self.assertEqual(prefix_sum_tree._sumtree.min(),0)
+        self.assertEqual(prefix_sum_tree._sumtree.max(),0)
+        self.assertEqual(prefix_sum_tree._array.dtype,int)
+        self.assertEqual(prefix_sum_tree._flat_base.dtype,int)
+        self.assertEqual(prefix_sum_tree._sumtree.dtype,int)
+        self.assertTrue(np.shares_memory(prefix_sum_tree._array, prefix_sum_tree._flat_base))
 
     def test_array_creation_from_nd_array_input(self):
         input_array = np.array([0,1]).astype("int32")
@@ -24,9 +37,18 @@ class TestPrefixSumTree(unittest.TestCase):
         # to input_array should not be reflected in prefix_sum_tree
         input_array[0] = 99
         self.assertTrue(isinstance(prefix_sum_tree,PrefixSumTree))
-        self.assertEqual(prefix_sum_tree[0],0)
-        self.assertEqual(prefix_sum_tree[1],1)
+        self.assertEqual(prefix_sum_tree.size,2)
+        self.assertEqual(prefix_sum_tree._array[0],0)
+        self.assertEqual(prefix_sum_tree._array[1],1)
+        self.assertEqual(prefix_sum_tree._sumtree[0],0)
+        self.assertEqual(prefix_sum_tree._sumtree[1],1)
         self.assertEqual(prefix_sum_tree.dtype,np.dtype("int32"))
+        self.assertEqual(prefix_sum_tree._array.dtype,np.dtype("int32"))
+        self.assertEqual(prefix_sum_tree._flat_base.dtype,np.dtype("int32"))
+        self.assertEqual(prefix_sum_tree._sumtree.dtype,np.dtype("int32"))
+        self.assertFalse(np.shares_memory(prefix_sum_tree._array, input_array))
+        self.assertFalse(np.shares_memory(prefix_sum_tree._flat_base, input_array))
+        self.assertTrue(np.shares_memory(prefix_sum_tree._array, prefix_sum_tree._flat_base))
 
     def test_array_creation_from_nd_array_input_and_dtype(self):
         input_array = np.array([0,1]).astype("int32")
@@ -35,19 +57,29 @@ class TestPrefixSumTree(unittest.TestCase):
         # to input_array should not be reflected in prefix_sum_tree
         input_array[0] = 99
         self.assertTrue(isinstance(prefix_sum_tree,PrefixSumTree))
-        self.assertEqual(prefix_sum_tree[0],0)
-        self.assertEqual(prefix_sum_tree[1],1)
+        self.assertEqual(prefix_sum_tree.size,2)
+        self.assertEqual(prefix_sum_tree._array[0],0)
+        self.assertEqual(prefix_sum_tree._array[1],1)
+        self.assertEqual(prefix_sum_tree._sumtree[0],0)
+        self.assertEqual(prefix_sum_tree._sumtree[1],1)
         self.assertEqual(prefix_sum_tree.dtype,np.dtype("int64"))
+        self.assertFalse(np.shares_memory(prefix_sum_tree._array, input_array))
+        self.assertFalse(np.shares_memory(prefix_sum_tree._flat_base, input_array))
+        self.assertTrue(np.shares_memory(prefix_sum_tree._array, prefix_sum_tree._flat_base))
 
     def test_array_creation_from_prefix_sum_tree_input(self):
         input_prefix_sum_tree = PrefixSumTree(np.array([0,1]).astype("int32"))
         prefix_sum_tree = PrefixSumTree(input_prefix_sum_tree)
-        # PrefixSumTree returns the input, and thus changes 
+        # PrefixSumTree points to the same buffers as the input, and thus changes 
         # to input_prefix_sum_tree should be reflected in prefix_sum_tree
-        self.assertEqual(id(input_prefix_sum_tree), id(prefix_sum_tree))
+        self.assertEqual(id(input_prefix_sum_tree._array), id(prefix_sum_tree._array))
+        self.assertEqual(id(input_prefix_sum_tree._flat_base), id(prefix_sum_tree._flat_base))
+        self.assertEqual(id(input_prefix_sum_tree._indices), id(prefix_sum_tree._indices))
+        self.assertEqual(id(input_prefix_sum_tree._sumtree), id(prefix_sum_tree._sumtree))
         input_prefix_sum_tree[0] = 99
         self.assertEqual(prefix_sum_tree[0],99)
         self.assertEqual(prefix_sum_tree[1],1)
+        self.assertEqual(prefix_sum_tree._sumtree[0],0)
         self.assertEqual(prefix_sum_tree._sumtree[1],100)
         self.assertEqual(prefix_sum_tree.dtype,np.dtype("int32"))
 
@@ -58,9 +90,15 @@ class TestPrefixSumTree(unittest.TestCase):
         # and thus changes to input_prefix_sum_tree should not be reflected in prefix_sum_tree
         input_prefix_sum_tree[0] = 99
         self.assertTrue(isinstance(prefix_sum_tree,PrefixSumTree))
-        self.assertEqual(prefix_sum_tree[0],0)
-        self.assertEqual(prefix_sum_tree[1],1)
+        self.assertEqual(prefix_sum_tree.size,2)
+        self.assertEqual(prefix_sum_tree._array[0],0)
+        self.assertEqual(prefix_sum_tree._array[1],1)
+        self.assertEqual(prefix_sum_tree._sumtree[0],0)
+        self.assertEqual(prefix_sum_tree._sumtree[1],1)
         self.assertEqual(prefix_sum_tree.dtype,np.dtype("int64"))
+        self.assertFalse(np.shares_memory(prefix_sum_tree._array, input_prefix_sum_tree))
+        self.assertFalse(np.shares_memory(prefix_sum_tree._flat_base, input_prefix_sum_tree))
+        self.assertTrue(np.shares_memory(prefix_sum_tree._array, prefix_sum_tree._flat_base))
 
     def test_invalid_array_creation(self):
         with self.assertRaises(ValueError):
@@ -87,33 +125,38 @@ class TestPrefixSumTree(unittest.TestCase):
         self.assertEqual(x2[0,0],10)
         self.assertEqual(x2._sumtree[1],16)
         x2[1] = 20
-        self.assertEqual(x1[1],20)
-        self.assertEqual(x1._sumtree[1],35)
-        self.assertEqual(x2[0,1],20)
-        self.assertEqual(x2._sumtree[1],35)
+        self.assertEqual(x1[2],20)
+        self.assertEqual(x1[3],20)
+        self.assertEqual(x1._sumtree[1],51)
+        self.assertEqual(x2[1,0],20)
+        self.assertEqual(x2[1,1],20)
+        self.assertEqual(x2._sumtree[1],51)
 
-    def test_transformation_does_not_affect_prefix_sum_tree(self):
+    def test_ufunc(self):
+        x = PrefixSumTree(np.array([4,9]),dtype='float64')
+        y = np.sqrt(x)
+        self.assertEqual(y[0],2)
+        self.assertEqual(y[1],3)
+        y = np.sqrt(x,dtype='float32')
+        self.assertEqual(y[0],2)
+        self.assertEqual(y[1],3)
+
+    def test_other_basic_math_funcs(self):
         x = PrefixSumTree(np.array([0,1,2,3]).astype("int32"))
-        x2 = x+1
-        # when a transformation is applied to a PrefixSumTree object, it is assumed that
-        # we do not want a new PrefixSumTree object (which could result in a large
-        # number of unwanted prefix sum tree updates)...and thus the transformation
-        # is applied to the underlying array object, and an NDArray is returned
-        self.assertFalse(isinstance(x2,PrefixSumTree))
+        self.assertEqual(x.min(),0)
+        self.assertEqual(x.max(),3)
 
-        # underlying x and sumtree is unchanged
-        self.assertEqual(x2[0],1)
-        self.assertEqual(x[0],0)
-        self.assertEqual(x._sumtree[1],6)
+    def test_ndim(self):
+        x = PrefixSumTree(np.array([0,1,2,3]).astype("int32"))
+        self.assertEqual(x.ndim,1)
+        x = PrefixSumTree(np.array([[0,1],[2,3]]).astype("int32"))
+        self.assertEqual(x.ndim,2)
 
-        # ditto for in-place assignment operators
-        x3 = x
-        x3 += 10
-        self.assertTrue(isinstance(x,PrefixSumTree))
-        self.assertFalse(isinstance(x3,PrefixSumTree))
-        self.assertEqual(x3[0],10)
-        self.assertEqual(x[0],0)
-        self.assertEqual(x._sumtree[1],6)
+    def test_size(self):
+        x = PrefixSumTree(np.array([0,1,2,3]).astype("int32"))
+        self.assertEqual(x.size,4)
+        x = PrefixSumTree(np.array([[0,1],[2,3]]).astype("int32"))
+        self.assertEqual(x.size,4)
 
     def test_set(self):
         # [[0,1],
@@ -326,14 +369,25 @@ class TestPrefixSumTree(unittest.TestCase):
         self.assertEqual(idx.ndim,1)
 
     def test_sum(self):
+        # 1d array
         x = PrefixSumTree(np.array([1,2,3,4]).astype("int32"))
         self.assertEqual(x.sum(),10)
+        # 2d array
         x = PrefixSumTree(np.array([[1,2],[3,4]]).astype("int32"))
         self.assertEqual(x.sum(),10)
+        self.assertEqual(x.sum(keepdims=True).ndim,2)
+        self.assertEqual(x.sum(keepdims=True)[0,0],10)
         y = x.sum(axis=1)
         self.assertEqual(y[0],3)
         self.assertEqual(y[1],7)
         self.assertEqual(y.size,2)
+        self.assertEqual(y.ndim,1)
+        y = x.sum(axis=1,keepdims=True)
+        self.assertEqual(y[0,0],3)
+        self.assertEqual(y[1,0],7)
+        self.assertEqual(y.size,2)
+        self.assertEqual(y.ndim,2)
+
 
     def test_sum_with_args(self):
         v = np.random.choice(100,size=(100,100))
@@ -383,14 +437,38 @@ class TestPrefixSumTree(unittest.TestCase):
             x = PrefixSumTree(10)
             x.sample(10)
 
-    def test_sumtree(self):
+    def test_array(self):
         x = PrefixSumTree(np.arange(4))
-        y = x.sumtree()
-        y[0] = 100
+        # copy
+        y = x.array()
         self.assertFalse(isinstance(y,PrefixSumTree))
         self.assertTrue(isinstance(y,np.ndarray))
-        self.assertEqual(y[0],100)
-        self.assertEqual(x._sumtree[0],0)
+        self.assertFalse(np.shares_memory(y,x._array))
+        # shared memory
+        y = x.array(copy=False)
+        self.assertFalse(isinstance(y,PrefixSumTree))
+        self.assertTrue(isinstance(y,np.ndarray))
+        self.assertTrue(np.shares_memory(y,x._array))
+
+    def test_sumtree(self):
+        x = PrefixSumTree(np.arange(4))
+        # copy
+        y = x.sumtree()
+        self.assertFalse(isinstance(y,PrefixSumTree))
+        self.assertTrue(isinstance(y,np.ndarray))
+        self.assertFalse(np.shares_memory(y,x._sumtree))
+        # shares memory
+        y = x.sumtree(copy=False)
+        self.assertFalse(isinstance(y,PrefixSumTree))
+        self.assertTrue(isinstance(y,np.ndarray))
+        self.assertTrue(np.shares_memory(y,x._sumtree))
+        
+    def test_repr(self):
+        x = PrefixSumTree(np.array([1,2,3,4]).reshape(2,2),dtype='float32')
+        self.assertEqual(repr(x), 'PrefixSumTree([[1., 2.],\n               [3., 4.]], dtype=float32)')
+        self.assertEqual(_repr_with_new_class_name('A',x._array), 'A([[1., 2.],\n   [3., 4.]], dtype=float32)')
+        self.assertEqual(_repr_with_new_class_name('array',x._array),repr(x._array))
+
         
 if __name__ == '__main__':
     unittest.main()
