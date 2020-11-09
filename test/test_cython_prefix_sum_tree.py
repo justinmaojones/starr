@@ -174,6 +174,8 @@ class TestCythonPrefixSumTree(unittest.TestCase):
             build_sumtree_from_array(vals, sumtree2)
 
             diff = np.abs(sumtree1 - sumtree2).max()
+            self.assertEqual(sumtree1[1], vals.sum())
+            self.assertEqual(sumtree2[1], vals.sum())
             self.assertEqual(diff, 0)
 
     def test_negative_value_error_in_build(self):
