@@ -184,7 +184,6 @@ class PrefixSumTree(np.ndarray):
             return output
 
     def _rebuild_sumtree(self):
-        self._validate_input(self._flat_base)
         build_sumtree_from_array(self._flat_base, self._sumtree)
 
     def copy(self,*args,**kwargs):
@@ -192,7 +191,6 @@ class PrefixSumTree(np.ndarray):
 
     @temporarily_enable_update
     def fill(self, val):
-        self._validate_input(val)
         super(PrefixSumTree, self).fill(val)
         self._rebuild_sumtree()
 
