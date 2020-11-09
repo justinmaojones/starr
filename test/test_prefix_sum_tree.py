@@ -132,6 +132,14 @@ class TestPrefixSumTree(unittest.TestCase):
         self.assertEqual(x2[1,1],20)
         self.assertEqual(x2._sumtree[1],51)
 
+    def test_ravel(self):
+        x = PrefixSumTree(np.array([[0,1],[2,3]]).astype("int32"))
+        x2 = x.ravel()
+        self.assertTrue(np.shares_memory(x,x2))
+        self.assertEqual(x.ndim,2)
+        self.assertEqual(x2.ndim,1)
+        self.assertEqual(x2.size,4)
+
     def test_ufunc(self):
         x = PrefixSumTree(np.array([4,9]),dtype='float64')
         y = np.sqrt(x)

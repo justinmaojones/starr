@@ -19,13 +19,11 @@ def _repr_with_new_class_name(class_name, array):
 
 class PrefixSumTree(object):
     """
-    A subclass of an ``numpy.ndarray`` that maintains an internal sumtree
-    for fast Categorical distribution sampling and fast sum operations,
-    at the expense of slower write operations. Because ``PrefixSumTree``
-    is a subclass of ``numpy.ndarray``, it can be used just like a
-    ``numpy.ndarray``.  It also comes with three new methods: ``sample``,
-    ``get_prefix_sum_id``, and ``sumtree``.  It also overrides ``sum``.
-    All elements of a ``PrefixSumTree`` must be non-negative (see below).
+    PrefixSumTree maintains an internal array and sumtree, both ``numpy.ndarray``, 
+    for fast Categorical distribution sampling and fast sum operations, at the 
+    expense of slower write operations. It comes with three key methods: ``sample``, 
+    ``get_prefix_sum_id``, and ``sum``. All elements of a ``PrefixSumTree`` must 
+    be non-negative (see below).
 
     Parameters
     ----------
@@ -43,20 +41,18 @@ class PrefixSumTree(object):
     Notes
     -----
     Because the elements of a ``PrefixSumTree`` represent an unnormalized 
-    Categorical probability distribution, we require that all elements of a
-    ``PrefixSumTree`` be non-negative.
+    Categorical probability distribution, all elements of a ``PrefixSumTree`` 
+    must be non-negative.
 
     For the sake of the integrity of the sumtree, the memory of the array is
-    carefully guarded. Elements of ``PrefixSumTree`` can only be updated through
+    carefully guarded. Elements of ``PrefixSumTree`` should only be updated through
     the ``PrefixSumTree`` API.  This ensures that the underlying sumtree correctly
     models the underlying array. For example, when creating a ``PrefixSumTree`` 
     from ``another_array``, the new ``PrefixSumTree`` uses a copy of ``another_array``.
-    Thus, changes to ``another_array`` do not affect the ``PrefixSumTree``. As another
-    example, using ``PrefixSumTree.view(any_valid_type)`` will return an object 
-    with a copy of the underlying ``PrefixSumTree``.
+    Thus, changes to ``another_array`` do not affect the ``PrefixSumTree``. 
 
     Similarly, when retrieving elements of a ``PrefixSumTree`` through indexing, 
-    the returned object is always an ``np.ndarray``, and thus the integrity of the
+    the returned object is a ``numpy.ndarray`` copy, and thus the integrity of the
     sumtree is protected. Another reason for doing this is that we always assume 
     that we do not want to re-compute a new sumtree on top of the returned object, 
     which could be unnecessarily expensive.
@@ -178,6 +174,9 @@ class PrefixSumTree(object):
         else:
             return PrefixSumTree(self).reshape(shape, inplace=True)
 
+    def ravel(self):
+        return self.reshape(-1)
+
     @property
     def shape(self):
         return self._array.shape
@@ -252,7 +251,7 @@ class PrefixSumTree(object):
         ``prefix_sum`` where each element ``i`` in the output is ``j`` 
         such that ``self.ravel()[:j+1] < prefix_sum[i]``.  In other words,
         the output array returns the index of the largest prefix sum of 
-        self that is less than the provided input.
+        ``self`` that is less than the provided input.
 
         Parameters
         ----------
