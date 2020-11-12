@@ -71,16 +71,6 @@ class TestPrefixSumTree(unittest.TestCase):
         self.assertEqual(prefix_sum_tree.dtype,np.dtype("int64"))
         self.assertFalse(prefix_sum_tree.flags['WRITEABLE'])
 
-    def test_invalid_array_creation(self):
-        with self.assertRaises(ValueError):
-            PrefixSumTree(0)
-        with self.assertRaises(ValueError):
-            PrefixSumTree(1)
-        with self.assertRaises(ValueError):
-            PrefixSumTree(np.array(1))
-        with self.assertRaises(ValueError):
-            PrefixSumTree(np.array([1]))
-
     def test_array_creation_from_view(self):
         x = np.array([1,2,3])
         y = x.view(PrefixSumTree)
@@ -91,6 +81,16 @@ class TestPrefixSumTree(unittest.TestCase):
         self.assertFalse(y.flags['WRITEABLE'])
         # sumtree should be up-to-date
         self.assertEqual(y._sumtree[1],6)
+
+    def test_invalid_array_creation(self):
+        with self.assertRaises(ValueError):
+            PrefixSumTree(0)
+        with self.assertRaises(ValueError):
+            PrefixSumTree(1)
+        with self.assertRaises(ValueError):
+            PrefixSumTree(np.array(1))
+        with self.assertRaises(ValueError):
+            PrefixSumTree(np.array([1]))
 
     def test_astype(self):
         prefix_sum_tree = PrefixSumTree(np.array([0,1]).astype('int32'))

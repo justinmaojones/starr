@@ -5,7 +5,7 @@ from ._cython import get_prefix_sum_idx
 from ._cython import strided_sum 
 from ._cython import update_prefix_sum_tree
 
-def temporarily_enable_update(func):
+def _temporarily_enable_update(func):
     def wrapper(self, *args, **kwargs):
         self._enable_writes(True)
         try:
@@ -101,7 +101,7 @@ class PrefixSumTree(np.ndarray):
                 raise ValueError("input to PrefixSumTree must have shape with at least 2 elements")
             return array.view(PrefixSumTree)
 
-    @temporarily_enable_update
+    @_temporarily_enable_update
     def __array_finalize__(self,array):
 
         if not np.shares_memory(array, self):
@@ -136,7 +136,7 @@ class PrefixSumTree(np.ndarray):
     def __array_wrap__(self, out_arr, context=None):
         return out_arr.view(np.ndarray)
 
-    @temporarily_enable_update
+    @_temporarily_enable_update
     def __array_ufunc__(self, ufunc, method, *inputs, **kwargs):
         inputs = list(inputs)
         for i, x in enumerate(inputs):
@@ -189,7 +189,7 @@ class PrefixSumTree(np.ndarray):
     def copy(self,*args,**kwargs):
         return PrefixSumTree(self.view(np.ndarray))
 
-    @temporarily_enable_update
+    @_temporarily_enable_update
     def fill(self, val):
         super(PrefixSumTree, self).fill(val)
         self._rebuild_sumtree()
