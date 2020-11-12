@@ -76,8 +76,8 @@ class TestPrefixSumTree(unittest.TestCase):
         y = x.view(PrefixSumTree)
         self.assertTrue(isinstance(y,PrefixSumTree))
         self.assertTrue(np.shares_memory(x,y))
-        # both arrays should be read-only now
-        self.assertFalse(x.flags['WRITEABLE'])
+        # PrefixSumTree should be read-only, though base array is still writeable
+        self.assertTrue(x.flags['WRITEABLE'])
         self.assertFalse(y.flags['WRITEABLE'])
         # sumtree should be up-to-date
         self.assertEqual(y._sumtree[1],6)
@@ -454,13 +454,13 @@ class TestPrefixSumTree(unittest.TestCase):
     def test_enable_writes(self):
         x = PrefixSumTree(np.arange(4))
         self.assertFalse(x.flags['WRITEABLE'])
-        self.assertFalse(x.base.flags['WRITEABLE'])
+        self.assertTrue(x.base.flags['WRITEABLE'])
         x._enable_writes(True)
         self.assertTrue(x.flags['WRITEABLE'])
         self.assertTrue(x.base.flags['WRITEABLE'])
         x._enable_writes(False)
         self.assertFalse(x.flags['WRITEABLE'])
-        self.assertFalse(x.base.flags['WRITEABLE'])
+        self.assertTrue(x.base.flags['WRITEABLE'])
 
     def test_copy(self):
         x = PrefixSumTree(np.arange(4))
