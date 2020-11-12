@@ -85,7 +85,7 @@ class PrefixSumTree(np.ndarray):
             if dtype is None:
                 return shape_or_array
             else:
-                return PrefixSumTree(shape_or_array.base,dtype)
+                return PrefixSumTree(shape_or_array.view(np.ndarray), dtype)
         
         elif isinstance(shape_or_array, np.ndarray):
             if shape_or_array.size <= 1:
@@ -94,6 +94,7 @@ class PrefixSumTree(np.ndarray):
             dtype = shape_or_array.dtype if dtype is None else dtype
             array = shape_or_array.astype(dtype, copy=True) # strictly copies
             return array.view(PrefixSumTree)
+
         else:
             dtype = float if dtype is None else dtype
             array = np.zeros(shape_or_array,dtype=dtype)

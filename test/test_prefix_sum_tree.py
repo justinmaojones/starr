@@ -465,9 +465,16 @@ class TestPrefixSumTree(unittest.TestCase):
     def test_copy(self):
         x = PrefixSumTree(np.arange(4))
         y = x.copy()
-        self.assertFalse(np.shares_memory(x,y))
         self.assertTrue(isinstance(y,PrefixSumTree))
+        self.assertFalse(np.shares_memory(x,y))
+        self.assertFalse(np.shares_memory(x._flat_base,y._flat_base))
+        self.assertFalse(np.shares_memory(x._sumtree,y._sumtree))
+        self.assertFalse(np.shares_memory(x._indices,y._indices))
         self.assertEqual(y.sum(),x.sum())
+        self.assertEqual(np.max(np.abs(x-y)),0)
+        self.assertEqual(np.max(np.abs(x._flat_base-y._flat_base)),0)
+        self.assertEqual(np.max(np.abs(x._sumtree-y._sumtree)),0)
+        self.assertEqual(np.max(np.abs(x._indices-y._indices)),0)
 
 if __name__ == '__main__':
     unittest.main()
