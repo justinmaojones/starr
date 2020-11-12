@@ -79,13 +79,13 @@ class PrefixSumTree(np.ndarray):
     PrefixSumTree([2., 1., 3., 4.], dtype=float32)
     """
 
-    def __new__(self,shape_or_array,dtype=None):
+    def __new__(self,shape_or_array, dtype=None):
 
         if isinstance(shape_or_array,PrefixSumTree):
             if dtype is None:
                 return shape_or_array
             else:
-                return PrefixSumTree(shape_or_array.view(np.ndarray), dtype)
+                return PrefixSumTree(shape_or_array.view(np.ndarray), dtype, read_only_base)
         
         elif isinstance(shape_or_array, np.ndarray):
             if shape_or_array.size <= 1:
@@ -103,7 +103,7 @@ class PrefixSumTree(np.ndarray):
             return array.view(PrefixSumTree)
 
     @_temporarily_enable_update
-    def __array_finalize__(self,array):
+    def __array_finalize__(self, array):
 
         if not np.shares_memory(array, self):
             # we should never end up here
@@ -159,13 +159,7 @@ class PrefixSumTree(np.ndarray):
             return super(PrefixSumTree, self).__array_ufunc__(ufunc, method, *inputs, **kwargs)
 
     def _enable_writes(self,val):
-        head = self
-        update_stack = [head]
-        while head is not None:
-            update_stack.append(head)
-            head = head.base
-        while len(update_stack) > 0:
-            update_stack.pop().setflags(write=val)
+        self.setflags(write=val)
 
     def __setitem__(self,idx,val):
         # TODO: there's probably a better way of converting idx to flat idx 
