@@ -85,7 +85,7 @@ class PrefixSumTree(np.ndarray):
             if dtype is None:
                 return shape_or_array
             else:
-                return PrefixSumTree(shape_or_array.view(np.ndarray), dtype, read_only_base)
+                return PrefixSumTree(shape_or_array.view(np.ndarray), dtype)
         
         elif isinstance(shape_or_array, np.ndarray):
             if shape_or_array.size <= 1:
