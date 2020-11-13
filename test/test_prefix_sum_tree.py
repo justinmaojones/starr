@@ -476,5 +476,134 @@ class TestPrefixSumTree(unittest.TestCase):
         self.assertEqual(np.max(np.abs(x._sumtree-y._sumtree)),0)
         self.assertEqual(np.max(np.abs(x._indices-y._indices)),0)
 
+    def test_choose(self):
+        x1 = np.array([0,1])
+        x2 = PrefixSumTree(x1)
+        y1 = x1.choose([np.array([0,1]),np.array([2,3])])
+        y2 = x2.choose([np.array([0,1]),np.array([2,3])])
+        self.assertFalse(isinstance(y2,PrefixSumTree))
+        self.assertEqual(np.max(np.abs(y1-y2)),0)
+
+    def test_diagonal(self):
+        x = PrefixSumTree(np.array([[0,1],[2,3]]))
+        y = x.diagonal()
+        self.assertFalse(isinstance(y,PrefixSumTree))
+        self.assertEqual(np.max(np.abs(y-np.array([0,3]))),0)
+
+    def test_dot(self):
+        x1 = PrefixSumTree(np.array([[0,1],[2,3]]))
+        y1 = x1.dot(x1)
+        x2 = np.array([[0,1],[2,3]])
+        y2 = x2.dot(x2)
+        self.assertFalse(isinstance(y1,PrefixSumTree))
+        self.assertEqual(np.max(np.abs(y1-y2)),0)
+
+    def test_flatten(self):
+        x = PrefixSumTree(np.array([0,1]))
+        y = x.flatten()
+        self.assertFalse(isinstance(y,PrefixSumTree))
+        self.assertFalse(np.shares_memory(x,y))
+
+    def test_imag(self):
+        x = PrefixSumTree(np.array([0,1]))
+        y = x.imag
+        self.assertFalse(isinstance(y,PrefixSumTree))
+        self.assertFalse(np.shares_memory(x,y))
+
+    def test_mean(self):
+        x1 = np.array([[0,1,2],[3,4,5]])
+        x2 = PrefixSumTree(x1)
+        self.assertEqual(x1.mean(), x2.mean())
+        self.assertEqual(np.max(np.abs(x1.mean(axis=0)-x2.mean(axis=0))),0)
+        self.assertEqual(np.max(np.abs(x1.mean(axis=1)-x2.mean(axis=1))),0)
+
+    def test_newbyteorder(self):
+        with self.assertRaises(NotImplementedError):
+            PrefixSumTree(4).newbyteorder()
+
+    def test_partition(self):
+        with self.assertRaises(NotImplementedError):
+            PrefixSumTree(4).partition(2)
+
+    def test_put(self):
+        with self.assertRaises(NotImplementedError):
+            PrefixSumTree(4).put(np.array([1,2]),3)
+
+    def test_real(self):
+        x = PrefixSumTree(np.array([0,1]))
+        y = x.real
+        self.assertFalse(isinstance(y,PrefixSumTree))
+        self.assertTrue(np.shares_memory(x,y))
+        
+    def test_repeat(self):
+        x1 = PrefixSumTree(np.array([[0,1],[2,3]]))
+        x2 = np.array([[0,1],[2,3]])
+        y1 = x1.repeat(5)
+        y2 = x2.repeat(5)
+        self.assertFalse(isinstance(y1,PrefixSumTree))
+        self.assertEqual(np.max(np.abs(y1-y2)),0)
+
+    def test_round(self):
+        x1 = np.array([[0.1,1.2],[2.5,3.6]])
+        x2 = PrefixSumTree(x1)
+        y1 = x1.round(0)
+        y2 = x2.round(0)
+        self.assertFalse(isinstance(y2,PrefixSumTree))
+        self.assertEqual(np.max(np.abs(y1-y2)),0)
+
+    def test_sort(self):
+        x = PrefixSumTree(np.array([2,3,1,0]))
+        x.sort()
+        self.assertEqual(np.max(np.abs(x-np.arange(4))),0)
+
+    def test_squeeze(self):
+        x = PrefixSumTree(np.array([2,3,1,0]).reshape([1,1,2,1,2,1,1]))
+        y = x.squeeze()
+        self.assertTrue(isinstance(y,PrefixSumTree))
+        self.assertTrue(np.shares_memory(x,y))
+        self.assertTrue(np.shares_memory(x._flat_base,y._flat_base))
+        self.assertTrue(np.shares_memory(x._sumtree,y._sumtree))
+        self.assertEqual(y.shape,(2,2))
+
+    def test_swapaxes(self):
+        x1 = np.array([0,1,2,3]).reshape(2,2)
+        x2 = PrefixSumTree(x1)
+        y1 = x1.swapaxes(0,1)
+        y2 = x2.swapaxes(0,1)
+        self.assertFalse(isinstance(y2,PrefixSumTree))
+        self.assertEqual(np.max(np.abs(y1-y2)),0)
+
+    def test_T(self):
+        x1 = np.array([0,1,2,3]).reshape(2,2)
+        x2 = PrefixSumTree(x1)
+        y1 = x1.T
+        y2 = x2.T
+        self.assertFalse(isinstance(y2,PrefixSumTree))
+        self.assertEqual(np.max(np.abs(y1-y2)),0)
+
+    def test_take(self):
+        x1 = np.array([[0,1],[2,3]])
+        x2 = PrefixSumTree(x1)
+        y1 = x1.take([0,3])
+        y2 = x2.take([0,3])
+        self.assertFalse(isinstance(y2,PrefixSumTree))
+        self.assertEqual(np.max(np.abs(y1-y2)),0)
+
+    def test_trace(self):
+        x1 = np.array([[0,1],[2,3]])
+        x2 = PrefixSumTree(x1)
+        y1 = x1.trace()
+        y2 = x2.trace()
+        self.assertFalse(isinstance(y2,PrefixSumTree))
+        self.assertEqual(np.max(np.abs(y1-y2)),0)
+    
+    def test_transpose(self):
+        x1 = np.array([0,1,2,3]).reshape(2,2)
+        x2 = PrefixSumTree(x1)
+        y1 = x1.transpose()
+        y2 = x2.transpose()
+        self.assertFalse(isinstance(y2,PrefixSumTree))
+        self.assertEqual(np.max(np.abs(y1-y2)),0)
+
 if __name__ == '__main__':
     unittest.main()

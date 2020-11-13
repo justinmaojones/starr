@@ -106,7 +106,6 @@ class PrefixSumTree(np.ndarray):
     def __array_finalize__(self, array):
 
         if not np.shares_memory(array, self):
-            # we should never end up here
             # note that we would have ended up here without overriding copy(...)
             raise NotImplementedError("input array and self must share memory")
 
@@ -181,16 +180,66 @@ class PrefixSumTree(np.ndarray):
     def _rebuild_sumtree(self):
         build_sumtree_from_array(self._flat_base, self._sumtree)
 
+    def astype(self, *args, **kwargs):
+        return self.view(np.ndarray).astype(*args, **kwargs)
+
+    def choose(self, *args, **kwargs):
+        return self.view(np.ndarray).choose(*args, **kwargs)
+
     def copy(self,*args,**kwargs):
         return PrefixSumTree(self.view(np.ndarray))
 
+    def diagonal(self, *args, **kwargs):
+        return self.view(np.ndarray).diagonal(*args, **kwargs)
+
+    def dot(self, *args, **kwargs):
+        return self.view(np.ndarray).dot(*args, **kwargs)
+
     @_temporarily_enable_update
-    def fill(self, val):
-        super(PrefixSumTree, self).fill(val)
+    def fill(self, *args, **kwargs):
+        super(PrefixSumTree, self).fill(*args, **kwargs)
         self._rebuild_sumtree()
 
-    def astype(self, *args, **kwargs):
-        return self.view(np.ndarray).astype(*args, **kwargs)
+    def flatten(self, *args, **kwargs):
+        return self.view(np.ndarray).flatten(*args, **kwargs)
+
+    @property
+    def imag(self):
+        return self.view(np.ndarray).imag
+
+    def mean(self, *args, **kwargs):
+        output = self.sum(*args, **kwargs)
+        m = np.array(output).size
+        n = self.size
+        assert n % m == 0
+        return output/(n/m)
+
+    def newbyteorder(self, *args, **kwargs):
+        raise NotImplementedError
+
+    def partition(self, *args, **kwargs):
+        raise NotImplementedError
+
+    def put(self, *args, **kwargs):
+        raise NotImplementedError
+
+    @property
+    def real(self):
+        return self.view(np.ndarray).real
+
+    def repeat(self, *args, **kwargs):
+        return self.view(np.ndarray).repeat(*args, **kwargs)
+
+    def round(self, *args, **kwargs):
+        return self.view(np.ndarray).round(*args, **kwargs)
+
+    @_temporarily_enable_update
+    def sort(self, *args, **kwargs):
+        super(PrefixSumTree, self).sort(*args, **kwargs)
+        self._rebuild_sumtree()
+
+    def squeeze(self):
+        return self.reshape(self.view(np.ndarray).squeeze().shape)
 
     def sumtree(self):
         """
@@ -216,6 +265,22 @@ class PrefixSumTree(np.ndarray):
         array([ 0., 10.,  3.,  7.], dtype=float32)
         """
         return np.copy(self._sumtree)
+
+    def swapaxes(self, *args, **kwargs):
+        return self.view(np.ndarray).swapaxes(*args, **kwargs)
+
+    @property
+    def T(self):
+        return self.view(np.ndarray).T
+
+    def take(self, *args, **kwargs):
+        return self.view(np.ndarray).take(*args, **kwargs)
+
+    def trace(self, *args, **kwargs):
+        return self.view(np.ndarray).trace(*args, **kwargs)
+
+    def transpose(self, *args, **kwargs):
+        return self.view(np.ndarray).transpose(*args, **kwargs)
     
     def get_prefix_sum_id(self,prefix_sum,flatten_indices=False):
         """
