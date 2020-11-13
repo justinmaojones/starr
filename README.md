@@ -15,7 +15,7 @@ pip install cython_sum_tree
 
 ## Quickstart 
 
-Initialize a `PrefixSumTree`, which is a subclass of `numpy.ndarray`
+Initialize a `PrefixSumTree`, which subclasses `numpy.ndarray`
 ```python
 >>> from prefix_sum_tree import PrefixSumTree
 >>> sum_tree = PrefixSumTree(4,dtype='float32')
@@ -32,7 +32,7 @@ PrefixSumTree([[1, 2, 3],
                [4, 5, 6]], dtype=int32)
 ```
 
-All `numpy.ndarray` methods are available to `PrefixSumTree`.  For example, set values like a `numpy.ndarray`
+Set values like a `numpy.ndarray`
 ```python
 >>> sum_tree[0] = 1
 >>> sum_tree[1:2] = [2]
@@ -42,19 +42,16 @@ All `numpy.ndarray` methods are available to `PrefixSumTree`.  For example, set 
 PrefixSumTree([1., 2., 3., 4.], dtype=float32)
 ```
 
-Arithmetic operations on a `PrefixSumTree` will always return a numpy array (to avoid expensive tree updates) 
+A `PrefixSumTree` maintains a sum segment tree, which can be used for fast sum and sampling.
+```python
+>>> sum_tree.sumtree()
+array([ 0., 10.,  3.,  7.], dtype=float32)
+```
+
+Arithmetic operations return a new numpy array (to avoid expensive tree initialization) 
 ```python
 >>> sum_tree * 2
 array([ 2., 4., 6., 8.], dtype=float32)
-
->>> sum_tree2 = sum_tree
->>> sum_tree2 *= 1
->>> sum_tree2
-array([ 2., 4., 6., 8.], dtype=float32)
-
->>> # sum_tree is still unchanged
->>> sum_tree
-PrefixSumTree([1., 2., 3., 4.], dtype=float32)
 ```
 
 This is true for get operations as well
@@ -64,6 +61,14 @@ array([2., 3.], dtype=float32)
 
 >>> sum_tree[:]
 array([1., 2., 3., 4.], dtype=float32)
+```
+
+However, in-place operations update `PrefixSumTree` 
+```python
+>>> sum_tree_in_place_op = PrefixSumTree(np.array([2,4,6,8]),dtype='float32')
+>>> sum_tree_in_place_op += 1
+>>> sum_tree_in_place_op 
+PrefixSumTree([3., 5., 7., 9.], dtype=float32)
 ```
 
 Sample indices (efficiently), with each element containing the unnormalized probability of being sampled
