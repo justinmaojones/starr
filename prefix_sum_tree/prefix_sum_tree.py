@@ -212,7 +212,7 @@ class PrefixSumTree(np.ndarray):
         m = np.array(output).size
         n = self.size
         assert n % m == 0
-        return output/(n/m)
+        return output/float(n/m)
 
     def newbyteorder(self, *args, **kwargs):
         raise NotImplementedError
