@@ -1,4 +1,4 @@
-![Build](docs/badges/build.svg)
+![Build](https://github.com/justinmaojones/cy_prefix_sum_tree/workflows/Build/badge.svg)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Python](docs/badges/python.svg)
 ![Coverage](docs/badges/coverage.svg)
