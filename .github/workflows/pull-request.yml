@@ -1,10 +1,6 @@
-name: Python package
+name: Pull Request 
 
-on:
-  push:
-    branches: [ $default-branch ]
-  pull_request:
-    branches: [ $default-branch ]
+on: [push, pull_request]
 
 jobs:
   build:
@@ -34,4 +30,4 @@ jobs:
     - name: Commit badge updates
       run: |
         git commit -m "update badges"
-        git push origin ${{ default-branch }}
+        #git push origin ${{ default-branch }}
