@@ -2,8 +2,9 @@ import numpy as np
 
 from ._cython import build_sumtree_from_array
 from ._cython import get_prefix_sum_idx
-from ._cython import strided_sum 
+from ._cython import strided_sum
 from ._cython import update_prefix_sum_tree
+
 
 def _temporarily_enable_update(func):
     def wrapper(self, *args, **kwargs):
@@ -13,7 +14,9 @@ def _temporarily_enable_update(func):
         finally:
             self._enable_writes(False)
         return output
+
     return wrapper
+
 
 class PrefixSumTree(np.ndarray):
     """
@@ -40,23 +43,23 @@ class PrefixSumTree(np.ndarray):
 
     Notes
     -----
-    Because the elements of a ``PrefixSumTree`` represent an unnormalized 
+    Because the elements of a ``PrefixSumTree`` represent an unnormalized
     Categorical probability distribution, we require that all elements of a
     ``PrefixSumTree`` be non-negative.
 
     For the sake of the integrity of the sumtree, the memory of the array is
     carefully guarded. Elements of ``PrefixSumTree`` can only be updated through
     the ``PrefixSumTree`` API.  This ensures that the underlying sumtree correctly
-    models the underlying array. For example, when creating a ``PrefixSumTree`` 
+    models the underlying array. For example, when creating a ``PrefixSumTree``
     from ``another_array``, the new ``PrefixSumTree`` uses a copy of ``another_array``.
     Thus, changes to ``another_array`` do not affect the ``PrefixSumTree``. As another
-    example, using ``PrefixSumTree.view(any_valid_type)`` will return an object 
+    example, using ``PrefixSumTree.view(any_valid_type)`` will return an object
     with a copy of the underlying ``PrefixSumTree``.
 
-    Similarly, when retrieving elements of a ``PrefixSumTree`` through indexing, 
+    Similarly, when retrieving elements of a ``PrefixSumTree`` through indexing,
     the returned object is always an ``np.ndarray``, and thus the integrity of the
-    sumtree is protected. Another reason for doing this is that we always assume 
-    that we do not want to re-compute a new sumtree on top of the returned object, 
+    sumtree is protected. Another reason for doing this is that we always assume
+    that we do not want to re-compute a new sumtree on top of the returned object,
     which could be unnecessarily expensive.
 
     References
@@ -79,27 +82,31 @@ class PrefixSumTree(np.ndarray):
     PrefixSumTree([2., 1., 3., 4.], dtype=float32)
     """
 
-    def __new__(self,shape_or_array, dtype=None):
+    def __new__(self, shape_or_array, dtype=None):
 
-        if isinstance(shape_or_array,PrefixSumTree):
+        if isinstance(shape_or_array, PrefixSumTree):
             if dtype is None:
                 return shape_or_array
             else:
                 return PrefixSumTree(shape_or_array.view(np.ndarray), dtype)
-        
+
         elif isinstance(shape_or_array, np.ndarray):
             if shape_or_array.size <= 1:
-                raise ValueError("input to PrefixSumTree must have shape with at least 2 elements")
+                raise ValueError(
+                    "input to PrefixSumTree must have shape with at least 2 elements"
+                )
             assert shape_or_array.size > 1
             dtype = shape_or_array.dtype if dtype is None else dtype
-            array = shape_or_array.astype(dtype, copy=True) # strictly copies
+            array = shape_or_array.astype(dtype, copy=True)  # strictly copies
             return array.view(PrefixSumTree)
 
         else:
             dtype = float if dtype is None else dtype
-            array = np.zeros(shape_or_array,dtype=dtype)
+            array = np.zeros(shape_or_array, dtype=dtype)
             if array.size <= 1:
-                raise ValueError("input to PrefixSumTree must have shape with at least 2 elements")
+                raise ValueError(
+                    "input to PrefixSumTree must have shape with at least 2 elements"
+                )
             return array.view(PrefixSumTree)
 
     @_temporarily_enable_update
@@ -113,7 +120,9 @@ class PrefixSumTree(np.ndarray):
             # inherit the same base and sum tree
             if array.size != self.size:
                 # we should never end up here
-                raise NotImplementedError("input array and base PrefixSumTree must have same number of elements")
+                raise NotImplementedError(
+                    "input array and base PrefixSumTree must have same number of elements"
+                )
             self._flat_base = self.base._flat_base
             self._indices = self.base._indices.reshape(self.shape)
             self._sumtree = self.base._sumtree
@@ -143,31 +152,34 @@ class PrefixSumTree(np.ndarray):
             if isinstance(x, PrefixSumTree):
                 inputs[i] = x.view(np.ndarray)
         inputs = tuple(inputs)
-        if 'out' in kwargs and kwargs['out'] is not None:
-            out = kwargs['out']
-            if len(out) == 1 and out[0] is self: 
+        if "out" in kwargs and kwargs["out"] is not None:
+            out = kwargs["out"]
+            if len(out) == 1 and out[0] is self:
                 # this is an in-place update on self
                 # proceed with update and then rebuild sumtree
-                kwargs['out'] = (self.view(np.ndarray),)
-                output = super(PrefixSumTree, self).__array_ufunc__(ufunc, method, *inputs, **kwargs)
+                kwargs["out"] = (self.view(np.ndarray),)
+                output = super(PrefixSumTree, self).__array_ufunc__(
+                    ufunc, method, *inputs, **kwargs
+                )
                 self._rebuild_sumtree()
                 return self
             else:
                 raise NotImplementedError
         else:
-            return super(PrefixSumTree, self).__array_ufunc__(ufunc, method, *inputs, **kwargs)
+            return super(PrefixSumTree, self).__array_ufunc__(
+                ufunc, method, *inputs, **kwargs
+            )
 
-    def _enable_writes(self,val):
+    def _enable_writes(self, val):
         self.setflags(write=val)
 
-    def __setitem__(self,idx,val):
-        # TODO: there's probably a better way of converting idx to flat idx 
+    def __setitem__(self, idx, val):
+        # TODO: there's probably a better way of converting idx to flat idx
         indices = np.ascontiguousarray(self._indices[idx]).ravel()
-        values = np.ascontiguousarray(val,dtype=self._flat_base.dtype).ravel()
-        update_prefix_sum_tree(
-                indices, values, self._flat_base, self._sumtree)
+        values = np.ascontiguousarray(val, dtype=self._flat_base.dtype).ravel()
+        update_prefix_sum_tree(indices, values, self._flat_base, self._sumtree)
 
-    def __getitem__(self,idx):
+    def __getitem__(self, idx):
         output = self.view(np.ndarray)[idx]
         if np.shares_memory(self, output):
             # if the output shares memory with self, then copy it
@@ -186,7 +198,7 @@ class PrefixSumTree(np.ndarray):
     def choose(self, *args, **kwargs):
         return self.view(np.ndarray).choose(*args, **kwargs)
 
-    def copy(self,*args,**kwargs):
+    def copy(self, *args, **kwargs):
         return PrefixSumTree(self.view(np.ndarray))
 
     def diagonal(self, *args, **kwargs):
@@ -212,7 +224,7 @@ class PrefixSumTree(np.ndarray):
         m = np.array(output).size
         n = self.size
         assert n % m == 0
-        return output/float(n/m)
+        return output / float(n / m)
 
     def newbyteorder(self, *args, **kwargs):
         raise NotImplementedError
@@ -243,7 +255,7 @@ class PrefixSumTree(np.ndarray):
 
     def sumtree(self):
         """
-        Returns a copy of the sumtree. 
+        Returns a copy of the sumtree.
 
         Returns
         -------
@@ -281,13 +293,13 @@ class PrefixSumTree(np.ndarray):
 
     def transpose(self, *args, **kwargs):
         return self.view(np.ndarray).transpose(*args, **kwargs)
-    
-    def get_prefix_sum_id(self,prefix_sum,flatten_indices=False):
+
+    def get_prefix_sum_id(self, prefix_sum, flatten_indices=False):
         """
         Returns an array of indices of the same shape is the input array
-        ``prefix_sum`` where each element ``i`` in the output is ``j`` 
+        ``prefix_sum`` where each element ``i`` in the output is ``j``
         such that ``self.ravel()[:j+1] < prefix_sum[i]``.  In other words,
-        the output array returns the index of the largest prefix sum of 
+        the output array returns the index of the largest prefix sum of
         self that is less than the provided input.
 
         Parameters
@@ -296,17 +308,17 @@ class PrefixSumTree(np.ndarray):
             An n-dimensional array of prefix sums.  Does not need to be
             of the same shape as ``self``.
         flatten_indices : bool, optional
-            Defaults to ``False``.  When ``True``, returns the indices 
+            Defaults to ``False``.  When ``True``, returns the indices
             as if ``self`` is a 1d array (i.e. ``self.ravel()``)
 
         Returns
         -------
         prefix_sum_indices : ndarray, tuple(ndarray)
             A new array holding the result is returned containing the
-            indices of the supplied prefix sums. The returned array 
+            indices of the supplied prefix sums. The returned array
             has the same shape as the input array. When supplied with
             ``flatten_indices=False`` and ``self`` is an n-d array
-            where ``n>1``, then a tuple of ``n`` arrays is returned 
+            where ``n>1``, then a tuple of ``n`` arrays is returned
             where each element of the tuple corresponds to each dimension
             of the ``PrefixSumTree``.
 
@@ -337,24 +349,23 @@ class PrefixSumTree(np.ndarray):
                [2, 3, 3, 3, 3]], dtype=int32)
         """
         # ensure prefix sum is the correct type and is contiguous
-        prefix_sum = np.ascontiguousarray(prefix_sum,dtype=self.dtype)
+        prefix_sum = np.ascontiguousarray(prefix_sum, dtype=self.dtype)
         prefix_sum_flat = prefix_sum.ravel()
         # init return array
-        flat_idx = np.zeros(prefix_sum.size,dtype=np.intp)
+        flat_idx = np.zeros(prefix_sum.size, dtype=np.intp)
         # get ids
-        get_prefix_sum_idx(flat_idx,prefix_sum_flat,self._flat_base,self._sumtree)
+        get_prefix_sum_idx(flat_idx, prefix_sum_flat, self._flat_base, self._sumtree)
         # output shape should be same as prefix_sum shape
         if prefix_sum.ndim > 1:
             output = flat_idx.reshape(prefix_sum.shape)
         else:
             output = flat_idx
         if self.ndim <= 1 or flatten_indices:
-            return output 
+            return output
         else:
-            return np.unravel_index(output,self.shape)
+            return np.unravel_index(output, self.shape)
 
-
-    def sample(self,nsamples=1,flatten_indices=False):
+    def sample(self, nsamples=1, flatten_indices=False):
         """
         Return a sample of indices, where the probability an index being
         sampled is equal to the value at that index divided by the
@@ -365,7 +376,7 @@ class PrefixSumTree(np.ndarray):
         nsamples : int
             Number of samples to return
         flatten_indices : bool, optional
-            Defaults to ``False``.  When ``True``, returns the indices 
+            Defaults to ``False``.  When ``True``, returns the indices
             as if ``self`` is a 1d array (i.e. ``self.ravel()``)
 
         Returns
@@ -374,8 +385,8 @@ class PrefixSumTree(np.ndarray):
             A new array holding the result is returned containing the
             sampled indices.  If the underlying ``PrefixSumTree`` array
             is n-dimensional, where n>1, and ``flatten_indices=False``,
-            then a tuple of ``n`` arrays is returned where each element of 
-            the tuple corresponds to each dimension of the ``PrefixSumTree`` 
+            then a tuple of ``n`` arrays is returned where each element of
+            the tuple corresponds to each dimension of the ``PrefixSumTree``
             array.
 
         Notes
@@ -391,10 +402,10 @@ class PrefixSumTree(np.ndarray):
         >>> sum_tree.sample(10)
         array([2, 3, 3, 3, 3, 1, 2, 2, 2, 0], dtype=int32)
         >>> # probability of being sampled
-        >>> sum_tree / sum_tree.sum() 
+        >>> sum_tree / sum_tree.sum()
         array([0.1, 0.2, 0.3, 0.4], dtype=float32)
         >>> # sampled proportions
-        >>> (sum_tree.sample(1000)[None] == np.arange(4)[:,None]).mean(axis=1) 
+        >>> (sum_tree.sample(1000)[None] == np.arange(4)[:,None]).mean(axis=1)
         array([0.10057, 0.19919, 0.29983, 0.40041])
         >>> # sampling from a 2-d array
         >>> sum_tree_from_2d_array = PrefixSumTree(np.array([[1,2,3],[4,5,6]],dtype='int32'))
@@ -410,18 +421,20 @@ class PrefixSumTree(np.ndarray):
             raise ValueError("array must have at least 1 positive value")
         # sample priority values in the cumulative sum
         vals = (self.sum() * np.random.rand(nsamples)).astype(self.dtype)
-        return self.get_prefix_sum_id(vals,flatten_indices)
+        return self.get_prefix_sum_id(vals, flatten_indices)
 
-    def _parse_axis_arg(self,axis):
+    def _parse_axis_arg(self, axis):
         if axis is None:
             return None
         else:
             axes = np.array(axis).reshape(-1)
             if len(set(axes)) < len(axes):
-                raise IndexError("invalid axis argument: %s contains duplicates" % str(axis))
+                raise IndexError(
+                    "invalid axis argument: %s contains duplicates" % str(axis)
+                )
             return np.arange(self.ndim)[axes]
 
-    def sum(self,axis=None,keepdims=False):
+    def sum(self, axis=None, keepdims=False):
         """
         Functions the same as ``numpy.sum(...)`` except that some ``sum``
         operations can be significantly faster for large arrays
@@ -435,24 +448,24 @@ class PrefixSumTree(np.ndarray):
         Parameters
         ----------
         axis : None or int or tuple of ints, optional
-            Axis or axes along which a sum is performed. The default, 
-            ``axis=None``, will sum all of the elements of the input array. 
-            If axis is negative it counts from the last to the first axis.  
-            If axis is a tuple of ints, a sum is performed on all of the 
-            axes specified in the tuple instead of a single axis or all the 
+            Axis or axes along which a sum is performed. The default,
+            ``axis=None``, will sum all of the elements of the input array.
+            If axis is negative it counts from the last to the first axis.
+            If axis is a tuple of ints, a sum is performed on all of the
+            axes specified in the tuple instead of a single axis or all the
             axes as before.
         keepdims : bool, optional
-            If this is set to True, the axes which are reduced are left in 
-            the result as dimensions with size one. With this option, the 
+            If this is set to True, the axes which are reduced are left in
+            the result as dimensions with size one. With this option, the
             result will broadcast correctly against the input array. Defaults
             to ``False``.
 
         Returns
         -------
         sum_along_axis : ndarray
-            An array with the same shape as self, with the specified axis 
-            or axes removed, unless ``keepdims=True`` in which case the 
-            specified axis or axes are not removed, but will have size ``1``. 
+            An array with the same shape as self, with the specified axis
+            or axes removed, unless ``keepdims=True`` in which case the
+            specified axis or axes are not removed, but will have size ``1``.
             If axis is None, a scalar is returned.
 
         Notes
@@ -462,9 +475,9 @@ class PrefixSumTree(np.ndarray):
         summing along the fast axis (C-contiguous), instead relying on the standard floating
         point precision arithmetic provided by Python.
 
-        References 
+        References
         ----------
-        [1] NumPy.  For more information on ``numpy.sum``, please see 
+        [1] NumPy.  For more information on ``numpy.sum``, please see
         https://numpy.org/doc/stable/reference/generated/numpy.sum.html
 
         Examples
@@ -488,18 +501,17 @@ class PrefixSumTree(np.ndarray):
         axes = self._parse_axis_arg(axis)
         if axes is None:
             if keepdims:
-                return self._sumtree[1:2].reshape([1]*self.ndim)
+                return self._sumtree[1:2].reshape([1] * self.ndim)
             else:
                 return self._sumtree[1]
         else:
             if axes.min() == self.ndim - len(axes):
                 # strides are contiguous along leaves of sumtree
                 stride = int(np.prod(np.array(self.shape)[axes]))
-                output = strided_sum(self._flat_base,self._sumtree,stride)
+                output = strided_sum(self._flat_base, self._sumtree, stride)
                 if keepdims:
-                    return output.reshape(list(output.shape)+[1]*len(axes))
+                    return output.reshape(list(output.shape) + [1] * len(axes))
                 else:
                     return output
             else:
-                return super(PrefixSumTree, self).sum(axis=axis,keepdims=keepdims)
-
+                return super(PrefixSumTree, self).sum(axis=axis, keepdims=keepdims)
