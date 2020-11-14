@@ -158,7 +158,7 @@ class PrefixSumTree(np.ndarray):
                 # this is an in-place update on self
                 # proceed with update and then rebuild sumtree
                 kwargs["out"] = (self.view(np.ndarray),)
-                output = super(PrefixSumTree, self).__array_ufunc__(
+                _ = super(PrefixSumTree, self).__array_ufunc__(
                     ufunc, method, *inputs, **kwargs
                 )
                 self._rebuild_sumtree()
