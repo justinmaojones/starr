@@ -27,6 +27,7 @@ jobs:
         tox
 
     - name: Coverage
+      run: |
         python -m pip install .[dev]
         sh coverage.sh
 
