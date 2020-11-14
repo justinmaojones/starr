@@ -1,3 +1,5 @@
+# to be run from root
+
 rm -rf build
 rm -rf prefix_sum_tree.egg-info
 rm -rf dist
