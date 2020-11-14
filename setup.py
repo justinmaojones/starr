@@ -7,7 +7,7 @@ requirements = (open("requirements.txt").read(),)
 try:
     requirements_dev = (open("requirements_dev.txt").read(),)
     extras_require = {"dev": requirements_dev}
-except:
+except FileNotFoundError:
     extras_require = None
 
 setup(
