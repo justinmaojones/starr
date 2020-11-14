@@ -30,4 +30,3 @@ jobs:
     - name: Commit badge updates
       run: |
         git commit -m "update badges"
-        #git push origin ${{ default-branch }}
