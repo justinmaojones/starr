@@ -1,5 +1,6 @@
 coverage
 coverage-badge
+flake8
 pandas
 pybadges
 pytest
