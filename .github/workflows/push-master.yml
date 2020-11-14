@@ -42,8 +42,7 @@ jobs:
 
     - name: Compute Coverage
       run: |
-        python -m pip install .
-        python -m pip install .[dev]
+        python -m pip install -e .
         sh coverage.sh
 
     - name: Commit Changes
