@@ -1,0 +1,41 @@
+name: Push Master 
+
+on:
+  push:
+    branch: master
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.6]
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Tox
+      run: |
+        python -m pip install --upgrade pip
+        python -m pip install tox
+        tox
+
+    - name: Coverage
+        python -m pip install .[dev]
+        sh coverage.sh
+
+    - name: Commit Changes
+      uses: EndBug/add-and-commit@v5
+      with:
+        author_name: Justin Mao-Jones
+        author_email: justinmaojones@gmail.com
+        message: "update coverage badge"
+        add: ./docs/badges/coverage.svg
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
