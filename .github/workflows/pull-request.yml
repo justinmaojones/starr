@@ -1,0 +1,37 @@
+name: Python package
+
+on:
+  push:
+    branches: [ $default-branch ]
+  pull_request:
+    branches: [ $default-branch ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.6]
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Tox
+      run: |
+        python -m pip install --upgrade pip
+        python -m pip install tox
+        sh tox.sh
+    - name: Install dependencies
+      run: |
+        pip install .[dev] 
+    - name: Coverage
+      run: |
+        sh coverage.sh
+    - name: Commit badge updates
+      run: |
+        git commit -m "update badges"
+        git push origin ${{ default-branch }}
