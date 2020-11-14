@@ -18,13 +18,13 @@ class TimingTest(object):
         self.sumtree = np.ones(N)
 
     def test_set(self):
-        raise NotImplementError
+        raise NotImplementedError
 
     def test_sample(self, nsamples=S):
-        raise NotImplementError
+        raise NotImplementedError
 
     def test_sum(self):
-        raise NotImplementError
+        raise NotImplementedError
 
 class NDArray(TimingTest):
 
