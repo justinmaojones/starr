@@ -1,10 +1,10 @@
 import unittest
 import numpy as np
-from prefix_sum_tree import build_sumtree_from_array
-from prefix_sum_tree import get_prefix_sum_idx
-from prefix_sum_tree import strided_sum
-from prefix_sum_tree import sum_over
-from prefix_sum_tree import update_sumtree
+from sumtree_array import build_sumtree_from_array
+from sumtree_array import get_prefix_sum_idx
+from sumtree_array import strided_sum
+from sumtree_array import sum_over
+from sumtree_array import update_sumtree
 
 
 class TestCythonSumTreeArray(unittest.TestCase):

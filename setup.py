@@ -11,27 +11,27 @@ except IOError:
     extras_require = None
 
 setup(
-    name="prefix_sum_tree",
+    name="sumtree_array",
     version="0.1",
     description="Prefix sum trees in Cython for Numpy",
     author="Justin Mao-Jones",
     author_email="justinmaojones@gmail.com",
     install_requires=requirements,
     extras_require=extras_require,
-    packages=find_packages(include=["prefix_sum_tree", "prefix_sum_tree.*"]),
+    packages=find_packages(include=["sumtree_array", "sumtree_array.*"]),
     cmdclass={"build_ext": build_ext},
     ext_modules=[
         Extension(
-            "prefix_sum_tree._cython",
-            sources=["prefix_sum_tree/src/_prefix_sum_tree.pyx"],
+            "sumtree_array._cython",
+            sources=["sumtree_array/src/_sumtree_array.pyx"],
             include_dirs=["."],
             language="c",
         ),
         Extension(
-            "prefix_sum_tree.experimental._cython",
+            "sumtree_array.experimental._cython",
             sources=[
-                "prefix_sum_tree/experimental/src/_prefix_sum_tree.pyx",
-                "prefix_sum_tree/experimental/src/prefix_sum_tree.cpp",
+                "sumtree_array/experimental/src/_sumtree_array.pyx",
+                "sumtree_array/experimental/src/sumtree_array.cpp",
             ],
             include_dirs=[numpy.get_include(), "."],
             language="c++",

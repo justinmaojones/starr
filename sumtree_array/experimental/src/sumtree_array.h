@@ -1,7 +1,7 @@
 #ifndef PREFIX_SUM_TREE_H
 #define PREFIX_SUM_TREE_H
 
-namespace prefix_sum_tree {
+namespace sumtree_array {
 
     void update_tree_multi_c(
             int* idxs, const int I,
