@@ -19,7 +19,7 @@ cdef ARRAY_TYPE disjoint_get(ARRAY_TYPE[:] array, ARRAY_TYPE[:] sumtree, Py_ssiz
     else:
         return sumtree[i]
 
-def update_prefix_sum_tree(
+def update_sumtree(
             Py_ssize_t[:] idxs,
             ARRAY_TYPE[:] vals,
             ARRAY_TYPE[:] array,

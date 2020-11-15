@@ -4,10 +4,10 @@ from prefix_sum_tree import build_sumtree_from_array
 from prefix_sum_tree import get_prefix_sum_idx
 from prefix_sum_tree import strided_sum
 from prefix_sum_tree import sum_over
-from prefix_sum_tree import update_prefix_sum_tree
+from prefix_sum_tree import update_sumtree
 
 
-class TestCythonPrefixSumTree(unittest.TestCase):
+class TestCythonSumTreeArray(unittest.TestCase):
     def test_sum_tree(self):
 
         #         [25]
@@ -24,12 +24,12 @@ class TestCythonPrefixSumTree(unittest.TestCase):
         sum_tree = np.zeros_like(values)
 
         # initially populate with some random positive values
-        update_prefix_sum_tree(
+        update_sumtree(
             indices, np.random.randint(1, 10, 5).astype(float), base, sum_tree
         )
 
         # update tree with values
-        update_prefix_sum_tree(indices, values, base, sum_tree)
+        update_sumtree(indices, values, base, sum_tree)
 
         # leaves should be equal to values
         for i in range(len(base)):
@@ -101,7 +101,7 @@ class TestCythonPrefixSumTree(unittest.TestCase):
             for at in ARRAY_TYPES:
                 base = np.zeros(N).astype(at)
                 sumtree = np.zeros(N).astype(at)
-                update_prefix_sum_tree(idx.astype(it), vals.astype(at), base, sumtree)
+                update_sumtree(idx.astype(it), vals.astype(at), base, sumtree)
 
                 output = np.zeros(K).astype(it)
                 vals_search = np.random.choice(int(vals.sum()), size=K).astype(at)
@@ -127,7 +127,7 @@ class TestCythonPrefixSumTree(unittest.TestCase):
                 base = np.zeros(N).astype(at)
                 sumtree = np.zeros(N).astype(at)
                 with self.assertRaises(TypeError):
-                    update_prefix_sum_tree(
+                    update_sumtree(
                         idx.astype(it), vals.astype(at), base, sumtree
                     )
 
@@ -145,7 +145,7 @@ class TestCythonPrefixSumTree(unittest.TestCase):
         output11 = np.zeros(11).astype(np.intp)
 
         with self.assertRaises(TypeError):
-            update_prefix_sum_tree(idx, vals, array, sumtree)
+            update_sumtree(idx, vals, array, sumtree)
 
         with self.assertRaises(TypeError):
             build_sumtree_from_array(array, sumtree)
@@ -163,10 +163,10 @@ class TestCythonPrefixSumTree(unittest.TestCase):
         sumtree = np.zeros(10).astype(float)
 
         with self.assertRaises(ValueError):
-            update_prefix_sum_tree(idx, vals, array, sumtree)
+            update_sumtree(idx, vals, array, sumtree)
 
     def test_build_sumtree_from_array(self):
-        # since we have already tested update_prefix_sum_tree,
+        # since we have already tested update_sumtree,
         # just test consistency between results
 
         for i in range(2, 16):
@@ -175,7 +175,7 @@ class TestCythonPrefixSumTree(unittest.TestCase):
             idx1 = np.arange(i).astype(np.intp)
             array1 = np.zeros(i).astype(float)
             sumtree1 = np.zeros(i).astype(float)
-            update_prefix_sum_tree(idx1, vals, array1, sumtree1)
+            update_sumtree(idx1, vals, array1, sumtree1)
 
             sumtree2 = np.zeros(i).astype(float)
             build_sumtree_from_array(vals, sumtree2)

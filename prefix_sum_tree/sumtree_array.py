@@ -3,7 +3,7 @@ import numpy as np
 from ._cython import build_sumtree_from_array
 from ._cython import get_prefix_sum_idx
 from ._cython import strided_sum
-from ._cython import update_prefix_sum_tree
+from ._cython import update_sumtree
 
 
 def _temporarily_enable_update(func):
@@ -18,24 +18,24 @@ def _temporarily_enable_update(func):
     return wrapper
 
 
-class PrefixSumTree(np.ndarray):
+class SumTreeArray(np.ndarray):
     """
     A subclass of an ``numpy.ndarray`` that maintains an internal sumtree
     for fast Categorical distribution sampling and fast sum operations,
-    at the expense of slower write operations. Because ``PrefixSumTree``
+    at the expense of slower write operations. Because ``SumTreeArray``
     is a subclass of ``numpy.ndarray``, it can be used just like a
     ``numpy.ndarray``.  It also comes with three new methods: ``sample``,
     ``get_prefix_sum_id``, and ``sumtree``.  It also overrides ``sum``.
-    All elements of a ``PrefixSumTree`` must be non-negative (see below).
+    All elements of a ``SumTreeArray`` must be non-negative (see below).
 
     Parameters
     ----------
     shape_or_array : int, tuple of ints, array-like
-        When an int or tuple of ints is provided, a ``PrefixSumTree`` is created
+        When an int or tuple of ints is provided, a ``SumTreeArray`` is created
         from an array of zeros of the given shape. When array-like, a
-        ``PrefixSumTree`` is created from the given array.
+        ``SumTreeArray`` is created from the given array.
     dtype : data-type, optional
-        When provided creates a ``PrefixSumTree`` of the specified dtype. If not
+        When provided creates a ``SumTreeArray`` of the specified dtype. If not
         provided, and ``shape_or_array`` is a shape, then an array of zeros with
         dtype ``float`` is created.  Defaults to ``None``. All integer and floating
         point dtypes are supported. Because of the non-negativity requirement,
@@ -43,22 +43,22 @@ class PrefixSumTree(np.ndarray):
 
     Notes
     -----
-    Because the elements of a ``PrefixSumTree`` represent an unnormalized
+    Because the elements of a ``SumTreeArray`` represent an unnormalized
     Categorical probability distribution, we require that all elements of a
-    ``PrefixSumTree`` be non-negative.
+    ``SumTreeArray`` be non-negative.
 
     For the sake of the integrity of the sumtree, the memory of the array is
-    carefully guarded. Elements of ``PrefixSumTree`` should only be updated through
-    the ``PrefixSumTree`` API.  This ensures that the underlying sumtree correctly
-    models the underlying array. For example, when creating a ``PrefixSumTree``
-    from ``another_array``, the new ``PrefixSumTree`` uses a copy of ``another_array``.
-    Thus, changes to ``another_array`` do not affect the ``PrefixSumTree``. As another
-    example, using ``PrefixSumTree.view(np.ndarray)`` will return an object
-    with read-only access to the underlying array ``PrefixSumTree``.
+    carefully guarded. Elements of ``SumTreeArray`` should only be updated through
+    the ``SumTreeArray`` API.  This ensures that the underlying sumtree correctly
+    models the underlying array. For example, when creating a ``SumTreeArray``
+    from ``another_array``, the new ``SumTreeArray`` uses a copy of ``another_array``.
+    Thus, changes to ``another_array`` do not affect the ``SumTreeArray``. As another
+    example, using ``SumTreeArray.view(np.ndarray)`` will return an object
+    with read-only access to the underlying array ``SumTreeArray``.
 
-    Similarly, when retrieving elements of a ``PrefixSumTree`` through indexing,
+    Similarly, when retrieving elements of a ``SumTreeArray`` through indexing,
     the returned object is always an ``np.ndarray`` that is a copy or read-only
-    view of the underlying array in ``PrefixSumTree``, and thus the integrity of the
+    view of the underlying array in ``SumTreeArray``, and thus the integrity of the
     sumtree is protected. Another reason for doing this is that we always assume
     that we do not want to re-compute a new sumtree on top of the returned object,
     which could be unnecessarily expensive.
@@ -69,46 +69,46 @@ class PrefixSumTree(np.ndarray):
 
     Examples
     --------
-    >>> PrefixSumTree(4,dtype='int32')
-    PrefixSumTree([0, 0, 0, 0], dtype=int32)
-    >>> PrefixSumTree((2,2),dtype='int32')
-    PrefixSumTree([[0, 0],
+    >>> SumTreeArray(4,dtype='int32')
+    SumTreeArray([0, 0, 0, 0], dtype=int32)
+    >>> SumTreeArray((2,2),dtype='int32')
+    SumTreeArray([[0, 0],
                    [0, 0]], dtype=int32)
-    >>> sum_tree = PrefixSumTree(np.array([1,2,3,4],dtype='float32'))
+    >>> sum_tree = SumTreeArray(np.array([1,2,3,4],dtype='float32'))
     >>> sum_tree
-    PrefixSumTree([1., 2., 3., 4.], dtype=float32)
+    SumTreeArray([1., 2., 3., 4.], dtype=float32)
     >>> # set and get just like an ndarray
     >>> sum_tree[:2] = [2,1]
     >>> sum_tree
-    PrefixSumTree([2., 1., 3., 4.], dtype=float32)
+    SumTreeArray([2., 1., 3., 4.], dtype=float32)
     """
 
     def __new__(self, shape_or_array, dtype=None):
 
-        if isinstance(shape_or_array, PrefixSumTree):
+        if isinstance(shape_or_array, SumTreeArray):
             if dtype is None:
                 return shape_or_array
             else:
-                return PrefixSumTree(shape_or_array.view(np.ndarray), dtype)
+                return SumTreeArray(shape_or_array.view(np.ndarray), dtype)
 
         elif isinstance(shape_or_array, np.ndarray):
             if shape_or_array.size <= 1:
                 raise ValueError(
-                    "input to PrefixSumTree must have shape with at least 2 elements"
+                    "input to SumTreeArray must have shape with at least 2 elements"
                 )
             assert shape_or_array.size > 1
             dtype = shape_or_array.dtype if dtype is None else dtype
             array = shape_or_array.astype(dtype, copy=True)  # strictly copies
-            return array.view(PrefixSumTree)
+            return array.view(SumTreeArray)
 
         else:
             dtype = float if dtype is None else dtype
             array = np.zeros(shape_or_array, dtype=dtype)
             if array.size <= 1:
                 raise ValueError(
-                    "input to PrefixSumTree must have shape with at least 2 elements"
+                    "input to SumTreeArray must have shape with at least 2 elements"
                 )
-            return array.view(PrefixSumTree)
+            return array.view(SumTreeArray)
 
     @_temporarily_enable_update
     def __array_finalize__(self, array):
@@ -117,12 +117,12 @@ class PrefixSumTree(np.ndarray):
             # note that we would have ended up here without overriding copy(...)
             raise NotImplementedError("input array and self must share memory")
 
-        if isinstance(self.base, PrefixSumTree) and self.base.dtype == self.dtype:
+        if isinstance(self.base, SumTreeArray) and self.base.dtype == self.dtype:
             # inherit the same base and sum tree
             if array.size != self.size:
                 # we should never end up here
                 raise NotImplementedError(
-                    "input array and base PrefixSumTree must have same number of elements"
+                    "input array and base SumTreeArray must have same number of elements"
                 )
             self._flat_base = self.base._flat_base
             self._indices = self.base._indices.reshape(self.shape)
@@ -135,8 +135,8 @@ class PrefixSumTree(np.ndarray):
             # sumtree needs to be initialize
             self._rebuild_sumtree()
 
-    # When a transformation is applied to a PrefixSumTree object, it is assumed that
-    # we do not want a new PrefixSumTree object (which could result in a large
+    # When a transformation is applied to a SumTreeArray object, it is assumed that
+    # we do not want a new SumTreeArray object (which could result in a large
     # number of unwanted prefix sum tree updates)...and thus the transformation
     # is applied to the underlying array object, and an NDArray is returned.
     # The exception to this rule is in-place operators, such as +=
@@ -150,7 +150,7 @@ class PrefixSumTree(np.ndarray):
     def __array_ufunc__(self, ufunc, method, *inputs, **kwargs):
         inputs = list(inputs)
         for i, x in enumerate(inputs):
-            if isinstance(x, PrefixSumTree):
+            if isinstance(x, SumTreeArray):
                 inputs[i] = x.view(np.ndarray)
         inputs = tuple(inputs)
         if "out" in kwargs and kwargs["out"] is not None:
@@ -159,7 +159,7 @@ class PrefixSumTree(np.ndarray):
                 # this is an in-place update on self
                 # proceed with update and then rebuild sumtree
                 kwargs["out"] = (self.view(np.ndarray),)
-                _ = super(PrefixSumTree, self).__array_ufunc__(
+                _ = super(SumTreeArray, self).__array_ufunc__(
                     ufunc, method, *inputs, **kwargs
                 )
                 self._rebuild_sumtree()
@@ -167,7 +167,7 @@ class PrefixSumTree(np.ndarray):
             else:
                 raise NotImplementedError
         else:
-            return super(PrefixSumTree, self).__array_ufunc__(
+            return super(SumTreeArray, self).__array_ufunc__(
                 ufunc, method, *inputs, **kwargs
             )
 
@@ -178,7 +178,7 @@ class PrefixSumTree(np.ndarray):
         # TODO: there's probably a better way of converting idx to flat idx
         indices = np.ascontiguousarray(self._indices[idx]).ravel()
         values = np.ascontiguousarray(val, dtype=self._flat_base.dtype).ravel()
-        update_prefix_sum_tree(indices, values, self._flat_base, self._sumtree)
+        update_sumtree(indices, values, self._flat_base, self._sumtree)
 
     def __getitem__(self, idx):
         return self.view(np.ndarray)[idx]
@@ -193,7 +193,7 @@ class PrefixSumTree(np.ndarray):
         return self.view(np.ndarray).choose(*args, **kwargs)
 
     def copy(self, *args, **kwargs):
-        return PrefixSumTree(self.view(np.ndarray))
+        return SumTreeArray(self.view(np.ndarray))
 
     def diagonal(self, *args, **kwargs):
         return self.view(np.ndarray).diagonal(*args, **kwargs)
@@ -203,7 +203,7 @@ class PrefixSumTree(np.ndarray):
 
     @_temporarily_enable_update
     def fill(self, *args, **kwargs):
-        super(PrefixSumTree, self).fill(*args, **kwargs)
+        super(SumTreeArray, self).fill(*args, **kwargs)
         self._rebuild_sumtree()
 
     def flatten(self, *args, **kwargs):
@@ -241,7 +241,7 @@ class PrefixSumTree(np.ndarray):
 
     @_temporarily_enable_update
     def sort(self, *args, **kwargs):
-        super(PrefixSumTree, self).sort(*args, **kwargs)
+        super(SumTreeArray, self).sort(*args, **kwargs)
         self._rebuild_sumtree()
 
     def squeeze(self):
@@ -254,18 +254,18 @@ class PrefixSumTree(np.ndarray):
         Returns
         -------
         sumtree : ndarray
-            A copy of the (flat) sumtree object maintained by ``PrefixSumTree``.
+            A copy of the (flat) sumtree object maintained by ``SumTreeArray``.
 
         Examples
         --------
-        >>> sum_tree = PrefixSumTree(np.array([1,2,3,4],dtype='float32'))
+        >>> sum_tree = SumTreeArray(np.array([1,2,3,4],dtype='float32'))
         >>> sum_tree
-        PrefixSumTree([1., 2., 3., 4.], dtype=float32)
+        SumTreeArray([1., 2., 3., 4.], dtype=float32)
         >>> sum_tree.sumtree()
         array([ 0., 10.,  3.,  7.], dtype=float32)
-        >>> sum_tree_from_2d_array = PrefixSumTree(np.array([[1,2],[3,4]],dtype='int32'))
+        >>> sum_tree_from_2d_array = SumTreeArray(np.array([[1,2],[3,4]],dtype='int32'))
         >>> sum_tree_from_2d_array
-        PrefixSumTree([[1., 2.],
+        SumTreeArray([[1., 2.],
                        [3., 4.]], dtype=float32)
         >>> sum_tree_from_2d_array.sumtree()
         array([ 0., 10.,  3.,  7.], dtype=float32)
@@ -314,7 +314,7 @@ class PrefixSumTree(np.ndarray):
             ``flatten_indices=False`` and ``self`` is an n-d array
             where ``n>1``, then a tuple of ``n`` arrays is returned
             where each element of the tuple corresponds to each dimension
-            of the ``PrefixSumTree``.
+            of the ``SumTreeArray``.
 
         Notes
         -----
@@ -323,17 +323,17 @@ class PrefixSumTree(np.ndarray):
 
         Examples
         --------
-        >>> sum_tree = PrefixSumTree(np.array([1,2,3,4],dtype='float32'))
+        >>> sum_tree = SumTreeArray(np.array([1,2,3,4],dtype='float32'))
         >>> sum_tree
-        PrefixSumTree([1., 2., 3., 4.], dtype=float32)
+        SumTreeArray([1., 2., 3., 4.], dtype=float32)
         >>> sum_tree.get_prefix_sum_id(np.arange(10))
         array([0, 1, 1, 2, 2, 2, 3, 3, 3, 3], dtype=int32)
         >>> sum_tree.get_prefix_sum_id(np.arange(10).reshape(2,5))
         array([[0, 1, 1, 2, 2],
                [2, 3, 3, 3, 3]], dtype=int32)
-        >>> sum_tree_from_2d_array = PrefixSumTree(np.array([[1,2],[3,4]],dtype='int32'))
+        >>> sum_tree_from_2d_array = SumTreeArray(np.array([[1,2],[3,4]],dtype='int32'))
         >>> sum_tree_from_2d_array
-        PrefixSumTree([[1., 2.],
+        SumTreeArray([[1., 2.],
                        [3., 4.]], dtype=float32)
         >>> # output is "flattened" and thus will be the same as ``sum_tree.get_prefix_sum_id`` above
         >>> sum_tree_from_2d_array.get_prefix_sum_id(np.arange(10))
@@ -377,10 +377,10 @@ class PrefixSumTree(np.ndarray):
         -------
         sample_of_indices : ndarray, tuple(ndarray)
             A new array holding the result is returned containing the
-            sampled indices.  If the underlying ``PrefixSumTree`` array
+            sampled indices.  If the underlying ``SumTreeArray`` array
             is n-dimensional, where n>1, and ``flatten_indices=False``,
             then a tuple of ``n`` arrays is returned where each element of
-            the tuple corresponds to each dimension of the ``PrefixSumTree``
+            the tuple corresponds to each dimension of the ``SumTreeArray``
             array.
 
         Notes
@@ -390,9 +390,9 @@ class PrefixSumTree(np.ndarray):
 
         Examples
         --------
-        >>> sum_tree = PrefixSumTree(np.array([1,2,3,4],dtype='float32'))
+        >>> sum_tree = SumTreeArray(np.array([1,2,3,4],dtype='float32'))
         >>> sum_tree
-        PrefixSumTree([1., 2., 3., 4.], dtype=float32)
+        SumTreeArray([1., 2., 3., 4.], dtype=float32)
         >>> sum_tree.sample(10)
         array([2, 3, 3, 3, 3, 1, 2, 2, 2, 0], dtype=int32)
         >>> # probability of being sampled
@@ -402,9 +402,9 @@ class PrefixSumTree(np.ndarray):
         >>> (sum_tree.sample(1000)[None] == np.arange(4)[:,None]).mean(axis=1)
         array([0.10057, 0.19919, 0.29983, 0.40041])
         >>> # sampling from a 2-d array
-        >>> sum_tree_from_2d_array = PrefixSumTree(np.array([[1,2,3],[4,5,6]],dtype='int32'))
+        >>> sum_tree_from_2d_array = SumTreeArray(np.array([[1,2,3],[4,5,6]],dtype='int32'))
         >>> sum_tree_from_2d_array
-        PrefixSumTree([[1, 2, 3],
+        SumTreeArray([[1, 2, 3],
                        [4, 5, 6]], dtype=int32)
         >>> sum_tree_from_2d_array.sample(4)
         (array([1, 1, 1, 0]), array([1, 1, 2, 2]))
@@ -465,7 +465,7 @@ class PrefixSumTree(np.ndarray):
         Notes
         -----
         Arithmetic is modular when using integer types, and no error is raised on overflow.
-        PrefixSumTree does not use the improved precision techniques that NumPy uses when
+        SumTreeArray does not use the improved precision techniques that NumPy uses when
         summing along the fast axis (C-contiguous), instead relying on the standard floating
         point precision arithmetic provided by Python.
 
@@ -476,7 +476,7 @@ class PrefixSumTree(np.ndarray):
 
         Examples
         --------
-        >>> x = PrefixSumTree(np.ones((1000,1000)))
+        >>> x = SumTreeArray(np.ones((1000,1000)))
         >>> # lightning fast
         >>> x.sum()
         1000000.0
@@ -508,4 +508,4 @@ class PrefixSumTree(np.ndarray):
                 else:
                     return output
             else:
-                return super(PrefixSumTree, self).sum(axis=axis, keepdims=keepdims)
+                return super(SumTreeArray, self).sum(axis=axis, keepdims=keepdims)

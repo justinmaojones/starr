@@ -42,9 +42,9 @@ class NDArray(TimingTest):
         self.base.sum()
 
 
-class PrefixSumTree(TimingTest):
+class SumTreeArray(TimingTest):
     def __init__(self):
-        self.sumtree = prefix_sum_tree.PrefixSumTree(np.ones(N))
+        self.sumtree = prefix_sum_tree.SumTreeArray(np.ones(N))
         self.test_set()  # initialize with vals
 
     def test_set(self):
@@ -118,7 +118,7 @@ if __name__ == "__main__":
 
     class_names = [
         "NDArray",
-        "PrefixSumTree",
+        "SumTreeArray",
         "CPlusPlus",
         "PythonList",
     ]
