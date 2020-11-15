@@ -180,14 +180,7 @@ class PrefixSumTree(np.ndarray):
         update_prefix_sum_tree(indices, values, self._flat_base, self._sumtree)
 
     def __getitem__(self, idx):
-        output = self.view(np.ndarray)[idx]
-        if np.shares_memory(self, output):
-            # if the output shares memory with self, then copy it
-            # because working directly with a view of self is dangerous
-            return output.copy()
-        else:
-            # otherwise, already copied, so return a normal ndarray
-            return output
+        return self.view(np.ndarray)[idx]
 
     def _rebuild_sumtree(self):
         build_sumtree_from_array(self._flat_base, self._sumtree)

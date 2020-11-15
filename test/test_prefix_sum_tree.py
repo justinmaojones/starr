@@ -201,17 +201,19 @@ class TestPrefixSumTree(unittest.TestCase):
         #  [2,3],
         #  [4,5]]
         x = PrefixSumTree(np.array([0, 1, 2, 3, 4, 5]).astype("int32").reshape((3, 2)))
-        # normal array indexing
+        # normal array indexing (slice shares memory)
         y = x[1]
         self.assertFalse(isinstance(y, PrefixSumTree))
-        self.assertFalse(np.shares_memory(x, y))
+        self.assertTrue(np.shares_memory(x, y))
+        self.assertFalse(y.flags['WRITEABLE'])
         self.assertEqual(y[0], 2)
         self.assertEqual(y[1], 3)
         self.assertEqual(y.size, 2)
-        # normal array indexing
+        # normal array indexing (slice shares memory)
         y = x[1:3, 1:]
         self.assertFalse(isinstance(y, PrefixSumTree))
-        self.assertFalse(np.shares_memory(x, y))
+        self.assertTrue(np.shares_memory(x, y))
+        self.assertFalse(y.flags['WRITEABLE'])
         self.assertEqual(y[0], 3)
         self.assertEqual(y[1], 5)
         self.assertEqual(y.size, 2)
