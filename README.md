@@ -48,7 +48,7 @@ A `PrefixSumTree` maintains a sum segment tree, which can be used for fast sum a
 array([ 0., 10.,  3.,  7.], dtype=float32)
 ```
 
-Arithmetic operations return a new numpy array (to avoid expensive tree initialization) 
+Arithmetic operations return a new `ndarray` (to avoid expensive tree initialization) 
 ```python
 >>> sum_tree * 2
 array([ 2., 4., 6., 8.], dtype=float32)

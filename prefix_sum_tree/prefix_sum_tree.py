@@ -48,16 +48,17 @@ class PrefixSumTree(np.ndarray):
     ``PrefixSumTree`` be non-negative.
 
     For the sake of the integrity of the sumtree, the memory of the array is
-    carefully guarded. Elements of ``PrefixSumTree`` can only be updated through
+    carefully guarded. Elements of ``PrefixSumTree`` should only be updated through
     the ``PrefixSumTree`` API.  This ensures that the underlying sumtree correctly
     models the underlying array. For example, when creating a ``PrefixSumTree``
     from ``another_array``, the new ``PrefixSumTree`` uses a copy of ``another_array``.
     Thus, changes to ``another_array`` do not affect the ``PrefixSumTree``. As another
-    example, using ``PrefixSumTree.view(any_valid_type)`` will return an object
-    with a copy of the underlying ``PrefixSumTree``.
+    example, using ``PrefixSumTree.view(np.ndarray)`` will return an object
+    with read-only access to the underlying array ``PrefixSumTree``.
 
     Similarly, when retrieving elements of a ``PrefixSumTree`` through indexing,
-    the returned object is always an ``np.ndarray``, and thus the integrity of the
+    the returned object is always an ``np.ndarray`` that is a copy or read-only
+    view of the underlying array in ``PrefixSumTree``, and thus the integrity of the
     sumtree is protected. Another reason for doing this is that we always assume
     that we do not want to re-compute a new sumtree on top of the returned object,
     which could be unnecessarily expensive.
