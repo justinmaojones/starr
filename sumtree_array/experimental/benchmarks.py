@@ -1,5 +1,5 @@
-import prefix_sum_tree
-import prefix_sum_tree.experimental
+import sumtree_array
+import sumtree_array.experimental
 import pandas as pd
 import numpy as np
 import timeit
@@ -42,9 +42,9 @@ class NDArray(TimingTest):
         self.base.sum()
 
 
-class PrefixSumTree(TimingTest):
+class SumTreeArray(TimingTest):
     def __init__(self):
-        self.sumtree = prefix_sum_tree.PrefixSumTree(np.ones(N))
+        self.sumtree = sumtree_array.SumTreeArray(np.ones(N))
         self.test_set()  # initialize with vals
 
     def test_set(self):
@@ -59,7 +59,7 @@ class PrefixSumTree(TimingTest):
 
 class PythonList(TimingTest):
     def __init__(self):
-        self.sumtree = prefix_sum_tree.experimental.slow.SumTree(N)
+        self.sumtree = sumtree_array.experimental.slow.SumTree(N)
         self.test_set()  # initialize with vals
 
     def test_set(self):
@@ -80,7 +80,7 @@ class CPlusPlus(TimingTest):
         self.test_set()  # initialize with vals
 
     def test_set(self):
-        prefix_sum_tree.experimental.update_tree_multi(
+        sumtree_array.experimental.update_tree_multi(
             IDX, VALS, self.base, self.sumtree
         )
 
@@ -89,7 +89,7 @@ class CPlusPlus(TimingTest):
             self.sumtree.dtype
         )
         output = np.ones(nsamples, dtype=np.int32)
-        return prefix_sum_tree.experimental.get_prefix_sum_idx_multi(
+        return sumtree_array.experimental.get_prefix_sum_idx_multi(
             output, vals_search, self.base, self.sumtree
         )
 
@@ -118,7 +118,7 @@ if __name__ == "__main__":
 
     class_names = [
         "NDArray",
-        "PrefixSumTree",
+        "SumTreeArray",
         "CPlusPlus",
         "PythonList",
     ]

@@ -1,3 +1,3 @@
 include LICENSE
 include requirements.txt
-include prefix_sum_tree/experimental/src/prefix_sum_tree.h
+include sumtree_array/experimental/src/sumtree_array.h

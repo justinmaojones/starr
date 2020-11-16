@@ -1,9 +1,9 @@
 #include <math.h>
 #include <stdexcept>
 #include <stdio.h>
-#include "prefix_sum_tree.h"
+#include "sumtree_array.h"
 
-namespace prefix_sum_tree {
+namespace sumtree_array {
 
     void update_tree_c(
             int idx, 

@@ -8,14 +8,14 @@ import numpy as np
 # if you want to use the Numpy-C-API from Cython
 cnp.import_array()
 
-cdef extern from "prefix_sum_tree.h" namespace "prefix_sum_tree" nogil:
+cdef extern from "sumtree_array.h" namespace "sumtree_array" nogil:
     void update_tree_multi_c(
             int* idxs, const int I,
             double* vals, const int V, 
             double* array, const int n,
             double* sumtree);
 
-cdef extern from "prefix_sum_tree.h" namespace "prefix_sum_tree" nogil:
+cdef extern from "sumtree_array.h" namespace "sumtree_array" nogil:
     void get_prefix_sum_idx_multi_c(int* outarray, double* vals, const int m, double* array, const int n, double* sumtree);
 
 
