@@ -18,76 +18,76 @@ pip install starr
 Initialize a `SumTreeArray`, which subclasses `numpy.ndarray`
 ```python
 >>> from starr import SumTreeArray
->>> sum_tree = SumTreeArray(4,dtype='float32')
->>> sum_tree
+>>> sumtree_array = SumTreeArray(4,dtype='float32')
+>>> sumtree_array
 SumTreeArray([0., 0., 0., 0.], dtype=float32)
 ```
 
-Or build one from an existing n-dimensional `numpy.ndarray` 
+Or build one from an existing n-dimensional `ndarray` 
 ```python
 >>> import numpy as np
->>> sum_tree_from_2d_array = SumTreeArray(np.array([[1,2,3],[4,5,6]],dtype='int32'))
->>> sum_tree_from_2d_array
+>>> sumtree_array_2d = SumTreeArray(np.array([[1,2,3],[4,5,6]],dtype='int32'))
+>>> sumtree_array_2d
 SumTreeArray([[1, 2, 3],
-               [4, 5, 6]], dtype=int32)
+              [4, 5, 6]], dtype=int32)
 ```
 
-Set values like a `numpy.ndarray`
+Set values like you normally would with `ndarray`
 ```python
->>> sum_tree[0] = 1
->>> sum_tree[1:2] = [2]
->>> sum_tree[np.array([False,False,True,False])] = 3
->>> sum_tree[-1] = 4
->>> sum_tree
+>>> sumtree_array[0] = 1
+>>> sumtree_array[1:2] = [2]
+>>> sumtree_array[np.array([False,False,True,False])] = 3
+>>> sumtree_array[-1] = 4
+>>> sumtree_array
 SumTreeArray([1., 2., 3., 4.], dtype=float32)
 ```
 
-A `SumTreeArray` maintains a sum segment tree, which can be used for fast sum and sampling.
+A `SumTreeArray` maintains a sum segment tree, which can be used for fast sum and sampling ops.
 ```python
->>> sum_tree.sumtree()
+>>> sumtree_array.sumtree()
 array([ 0., 10.,  3.,  7.], dtype=float32)
 ```
 
 Arithmetic operations return a new `ndarray` (to avoid expensive tree initialization) 
 ```python
->>> sum_tree * 2
+>>> sumtree_array * 2
 array([ 2., 4., 6., 8.], dtype=float32)
 ```
 
-This is true for get operations as well
+This is true for some get operations as well
 ```python
->>> sum_tree[1:3]
+>>> sumtree_array[1:3]
 array([2., 3.], dtype=float32)
 
->>> sum_tree[:]
+>>> sumtree_array[:]
 array([1., 2., 3., 4.], dtype=float32)
 ```
 
 However, in-place operations update `SumTreeArray` 
 ```python
->>> sum_tree_in_place_op = SumTreeArray(np.array([2,4,6,8]),dtype='float32')
->>> sum_tree_in_place_op += 1
->>> sum_tree_in_place_op 
+>>> sumtree_array_in_place_op = SumTreeArray(np.array([2,4,6,8]),dtype='float32')
+>>> sumtree_array_in_place_op += 1
+>>> sumtree_array_in_place_op 
 SumTreeArray([3., 5., 7., 9.], dtype=float32)
 ```
 
 Sample indices (efficiently), with each element containing the unnormalized probability of being sampled
 ```python
->>> sum_tree.sample(10)
+>>> sumtree_array.sample(10)
 array([2, 3, 3, 3, 3, 1, 2, 2, 2, 0], dtype=int32)
 
 >>> # probability of being sampled
->>> sum_tree / sum_tree.sum() 
+>>> sumtree_array / sumtree_array.sum() 
 array([0.1, 0.2, 0.3, 0.4], dtype=float32)
 
 >>> # sampled proportions
->>> (sum_tree.sample(1000)[None] == np.arange(4)[:,None]).mean(axis=1) 
+>>> (sumtree_array.sample(1000)[None] == np.arange(4)[:,None]).mean(axis=1) 
 array([0.10057, 0.19919, 0.29983, 0.40041])
 ```
 
 You can also sample indices from an n-dimensional `SumTreeArray`
 ```python
->>> sum_tree_from_2d_array.sample(4)
+>>> sumtree_array_2d.sample(4)
 (array([1, 1, 0, 0]), array([0, 1, 1, 2]))
 ```
 
