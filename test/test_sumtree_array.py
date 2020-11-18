@@ -205,7 +205,7 @@ class TestSumTreeArray(unittest.TestCase):
         y = x[1]
         self.assertFalse(isinstance(y, SumTreeArray))
         self.assertTrue(np.shares_memory(x, y))
-        self.assertFalse(y.flags['WRITEABLE'])
+        self.assertFalse(y.flags["WRITEABLE"])
         self.assertEqual(y[0], 2)
         self.assertEqual(y[1], 3)
         self.assertEqual(y.size, 2)
@@ -213,7 +213,7 @@ class TestSumTreeArray(unittest.TestCase):
         y = x[1:3, 1:]
         self.assertFalse(isinstance(y, SumTreeArray))
         self.assertTrue(np.shares_memory(x, y))
-        self.assertFalse(y.flags['WRITEABLE'])
+        self.assertFalse(y.flags["WRITEABLE"])
         self.assertEqual(y[0], 3)
         self.assertEqual(y[1], 5)
         self.assertEqual(y.size, 2)

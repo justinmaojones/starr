@@ -127,9 +127,7 @@ class TestCythonSumTreeArray(unittest.TestCase):
                 base = np.zeros(N).astype(at)
                 sumtree = np.zeros(N).astype(at)
                 with self.assertRaises(TypeError):
-                    update_sumtree(
-                        idx.astype(it), vals.astype(at), base, sumtree
-                    )
+                    update_sumtree(idx.astype(it), vals.astype(at), base, sumtree)
 
                 output = np.zeros(K).astype(it)
                 vals_search = np.random.choice(int(vals.sum()), size=K).astype(at)

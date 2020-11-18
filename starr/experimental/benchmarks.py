@@ -80,9 +80,7 @@ class CPlusPlus(TimingTest):
         self.test_set()  # initialize with vals
 
     def test_set(self):
-        starr.experimental.update_tree_multi(
-            IDX, VALS, self.base, self.sumtree
-        )
+        starr.experimental.update_tree_multi(IDX, VALS, self.base, self.sumtree)
 
     def test_sample(self, nsamples=S):
         vals_search = (self.sumtree[1] * np.random.rand(nsamples)).astype(

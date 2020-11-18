@@ -226,7 +226,7 @@ class SumTreeArray(np.ndarray):
         self._rebuild_sumtree()
 
     def put(self, indices, values):
-        # TODO: there's probably a better way of building an index iterator 
+        # TODO: there's probably a better way of building an index iterator
         indices = np.ascontiguousarray(self._indices[indices]).ravel()
         values = np.ascontiguousarray(values, dtype=self._flat_base.dtype).ravel()
         update_sumtree(indices, values, self._flat_base, self._sumtree)
