@@ -17,7 +17,7 @@ pip install starr
 
 Initialize a `SumTreeArray`, which subclasses `numpy.ndarray`
 ```python
->>> from prefix_sum_tree import SumTreeArray
+>>> from starr import SumTreeArray
 >>> sum_tree = SumTreeArray(4,dtype='float32')
 >>> sum_tree
 SumTreeArray([0., 0., 0., 0.], dtype=float32)
