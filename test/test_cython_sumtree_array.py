@@ -1,10 +1,10 @@
 import unittest
 import numpy as np
-from sumtree_array import build_sumtree_from_array
-from sumtree_array import get_prefix_sum_idx
-from sumtree_array import strided_sum
-from sumtree_array import sum_over
-from sumtree_array import update_sumtree
+from starr import build_sumtree_from_array
+from starr import get_prefix_sum_idx
+from starr import strided_sum
+from starr import sum_over
+from starr import update_sumtree
 
 
 class TestCythonSumTreeArray(unittest.TestCase):
@@ -127,9 +127,7 @@ class TestCythonSumTreeArray(unittest.TestCase):
                 base = np.zeros(N).astype(at)
                 sumtree = np.zeros(N).astype(at)
                 with self.assertRaises(TypeError):
-                    update_sumtree(
-                        idx.astype(it), vals.astype(at), base, sumtree
-                    )
+                    update_sumtree(idx.astype(it), vals.astype(at), base, sumtree)
 
                 output = np.zeros(K).astype(it)
                 vals_search = np.random.choice(int(vals.sum()), size=K).astype(at)
