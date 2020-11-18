@@ -175,10 +175,7 @@ class SumTreeArray(np.ndarray):
         self.setflags(write=val)
 
     def __setitem__(self, idx, val):
-        # TODO: there's probably a better way of converting idx to flat idx
-        indices = np.ascontiguousarray(self._indices[idx]).ravel()
-        values = np.ascontiguousarray(val, dtype=self._flat_base.dtype).ravel()
-        update_sumtree(indices, values, self._flat_base, self._sumtree)
+        self.put(idx, val)
 
     def __getitem__(self, idx):
         return self.view(np.ndarray)[idx]
@@ -229,6 +226,7 @@ class SumTreeArray(np.ndarray):
         self._rebuild_sumtree()
 
     def put(self, indices, values):
+        # TODO: there's probably a better way of building an index iterator 
         indices = np.ascontiguousarray(self._indices[indices]).ravel()
         values = np.ascontiguousarray(values, dtype=self._flat_base.dtype).ravel()
         update_sumtree(indices, values, self._flat_base, self._sumtree)
