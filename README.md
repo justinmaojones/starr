@@ -3,14 +3,14 @@
 ![Python](docs/badges/python.svg)
 ![Coverage](docs/badges/coverage.svg)
 
-# CythonSumTree 
+# starr 
 
-Fast sum segment trees in C (via Cython) for Numpy arrays in Python.  Inspired by [Prioritized Experience Replay](https://arxiv.org/abs/1511.05952).
+Fast sum trees ops in Cython for NumPy arrays in Python.  Inspired by [Prioritized Experience Replay](https://arxiv.org/abs/1511.05952).
 
 ## Installation
 
 ```
-pip install cython_sum_tree
+pip install starr 
 ```
 
 ## Quickstart 

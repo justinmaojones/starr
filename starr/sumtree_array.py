@@ -221,13 +221,17 @@ class SumTreeArray(np.ndarray):
         return output / float(n / m)
 
     def newbyteorder(self, *args, **kwargs):
-        raise NotImplementedError
+        return self.view(np.ndarray).newbyteorder(*args, **kwargs)
 
+    @_temporarily_enable_update
     def partition(self, *args, **kwargs):
-        raise NotImplementedError
+        super(SumTreeArray, self).partition(*args, **kwargs)
+        self._rebuild_sumtree()
 
-    def put(self, *args, **kwargs):
-        raise NotImplementedError
+    def put(self, indices, values):
+        indices = np.ascontiguousarray(self._indices[indices]).ravel()
+        values = np.ascontiguousarray(values, dtype=self._flat_base.dtype).ravel()
+        update_sumtree(indices, values, self._flat_base, self._sumtree)
 
     @property
     def real(self):

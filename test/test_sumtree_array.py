@@ -1,75 +1,75 @@
 import unittest
 import numpy as np
-from sumtree_array import SumTreeArray
+from starr import SumTreeArray
 
 
 class TestSumTreeArray(unittest.TestCase):
     def test_array_creation_from_shape_inputs(self):
-        sumtree_array = SumTreeArray(2)
-        self.assertTrue(isinstance(sumtree_array, SumTreeArray))
-        self.assertEqual(sumtree_array.size, 2)
-        self.assertEqual(sumtree_array.min(), 0)
-        self.assertEqual(sumtree_array.max(), 0)
-        self.assertEqual(sumtree_array.dtype, float)
-        self.assertFalse(sumtree_array.flags["WRITEABLE"])
+        starr = SumTreeArray(2)
+        self.assertTrue(isinstance(starr, SumTreeArray))
+        self.assertEqual(starr.size, 2)
+        self.assertEqual(starr.min(), 0)
+        self.assertEqual(starr.max(), 0)
+        self.assertEqual(starr.dtype, float)
+        self.assertFalse(starr.flags["WRITEABLE"])
 
     def test_array_creation_from_shape_inputs_and_dtype(self):
-        sumtree_array = SumTreeArray(2, dtype=int)
-        self.assertTrue(isinstance(sumtree_array, SumTreeArray))
-        self.assertEqual(sumtree_array.dtype, int)
-        self.assertFalse(sumtree_array.flags["WRITEABLE"])
+        starr = SumTreeArray(2, dtype=int)
+        self.assertTrue(isinstance(starr, SumTreeArray))
+        self.assertEqual(starr.dtype, int)
+        self.assertFalse(starr.flags["WRITEABLE"])
 
     def test_array_creation_from_nd_array_input(self):
         input_array = np.array([0, 1]).astype("int32")
-        sumtree_array = SumTreeArray(input_array)
+        starr = SumTreeArray(input_array)
         # SumTreeArray creates a new base array, and thus changes
-        # to input_array should not be reflected in sumtree_array
+        # to input_array should not be reflected in starr
         input_array[0] = 99
-        self.assertTrue(isinstance(sumtree_array, SumTreeArray))
-        self.assertEqual(sumtree_array[0], 0)
-        self.assertEqual(sumtree_array[1], 1)
-        self.assertEqual(sumtree_array._sumtree[1], 1)
-        self.assertEqual(sumtree_array.dtype, np.dtype("int32"))
-        self.assertFalse(sumtree_array.flags["WRITEABLE"])
+        self.assertTrue(isinstance(starr, SumTreeArray))
+        self.assertEqual(starr[0], 0)
+        self.assertEqual(starr[1], 1)
+        self.assertEqual(starr._sumtree[1], 1)
+        self.assertEqual(starr.dtype, np.dtype("int32"))
+        self.assertFalse(starr.flags["WRITEABLE"])
 
     def test_array_creation_from_nd_array_input_and_dtype(self):
         input_array = np.array([0, 1]).astype("int32")
-        sumtree_array = SumTreeArray(input_array, dtype="int64")
+        starr = SumTreeArray(input_array, dtype="int64")
         # SumTreeArray creates a new base array, and thus changes
-        # to input_array should not be reflected in sumtree_array
+        # to input_array should not be reflected in starr
         input_array[0] = 99
-        self.assertTrue(isinstance(sumtree_array, SumTreeArray))
-        self.assertEqual(sumtree_array[0], 0)
-        self.assertEqual(sumtree_array[1], 1)
-        self.assertEqual(sumtree_array._sumtree[1], 1)
-        self.assertEqual(sumtree_array.dtype, np.dtype("int64"))
-        self.assertFalse(sumtree_array.flags["WRITEABLE"])
+        self.assertTrue(isinstance(starr, SumTreeArray))
+        self.assertEqual(starr[0], 0)
+        self.assertEqual(starr[1], 1)
+        self.assertEqual(starr._sumtree[1], 1)
+        self.assertEqual(starr.dtype, np.dtype("int64"))
+        self.assertFalse(starr.flags["WRITEABLE"])
 
-    def test_array_creation_from_sumtree_array_input(self):
-        input_sumtree_array = SumTreeArray(np.array([0, 1]).astype("int32"))
-        sumtree_array = SumTreeArray(input_sumtree_array)
+    def test_array_creation_from_starr_input(self):
+        input_starr = SumTreeArray(np.array([0, 1]).astype("int32"))
+        starr = SumTreeArray(input_starr)
         # SumTreeArray returns the input, and thus changes
-        # to input_sumtree_array should be reflected in sumtree_array
-        self.assertEqual(id(input_sumtree_array), id(sumtree_array))
-        input_sumtree_array[0] = 99
-        self.assertEqual(sumtree_array[0], 99)
-        self.assertEqual(sumtree_array[1], 1)
-        self.assertEqual(sumtree_array._sumtree[1], 100)
-        self.assertEqual(sumtree_array.dtype, np.dtype("int32"))
-        self.assertFalse(sumtree_array.flags["WRITEABLE"])
+        # to input_starr should be reflected in starr
+        self.assertEqual(id(input_starr), id(starr))
+        input_starr[0] = 99
+        self.assertEqual(starr[0], 99)
+        self.assertEqual(starr[1], 1)
+        self.assertEqual(starr._sumtree[1], 100)
+        self.assertEqual(starr.dtype, np.dtype("int32"))
+        self.assertFalse(starr.flags["WRITEABLE"])
 
-    def test_array_creation_from_sumtree_array_input_and_dtype(self):
-        input_sumtree_array = SumTreeArray(np.array([0, 1]).astype("int32"))
-        sumtree_array = SumTreeArray(input_sumtree_array, dtype="int64")
+    def test_array_creation_from_starr_input_and_dtype(self):
+        input_starr = SumTreeArray(np.array([0, 1]).astype("int32"))
+        starr = SumTreeArray(input_starr, dtype="int64")
         # SumTreeArray creates a new underlying prefix sum tree, because the type signature is different,
-        # and thus changes to input_sumtree_array should not be reflected in sumtree_array
-        input_sumtree_array[0] = 99
-        self.assertTrue(isinstance(sumtree_array, SumTreeArray))
-        self.assertEqual(sumtree_array[0], 0)
-        self.assertEqual(sumtree_array[1], 1)
-        self.assertEqual(sumtree_array._sumtree[1], 1)
-        self.assertEqual(sumtree_array.dtype, np.dtype("int64"))
-        self.assertFalse(sumtree_array.flags["WRITEABLE"])
+        # and thus changes to input_starr should not be reflected in starr
+        input_starr[0] = 99
+        self.assertTrue(isinstance(starr, SumTreeArray))
+        self.assertEqual(starr[0], 0)
+        self.assertEqual(starr[1], 1)
+        self.assertEqual(starr._sumtree[1], 1)
+        self.assertEqual(starr.dtype, np.dtype("int64"))
+        self.assertFalse(starr.flags["WRITEABLE"])
 
     def test_array_creation_from_view(self):
         x = np.array([1, 2, 3])
@@ -93,26 +93,26 @@ class TestSumTreeArray(unittest.TestCase):
             SumTreeArray(np.array([1]))
 
     def test_astype(self):
-        sumtree_array = SumTreeArray(np.array([0, 1]).astype("int32"))
-        output = sumtree_array.astype("int32")
+        starr = SumTreeArray(np.array([0, 1]).astype("int32"))
+        output = starr.astype("int32")
         self.assertTrue(isinstance(output, np.ndarray))
         self.assertFalse(isinstance(output, SumTreeArray))
-        self.assertFalse(np.shares_memory(sumtree_array, output))
+        self.assertFalse(np.shares_memory(starr, output))
 
     def test_view(self):
-        sumtree_array = SumTreeArray(np.array([0, 1]).astype("int32"))
-        output = sumtree_array.view(np.ndarray)
+        starr = SumTreeArray(np.array([0, 1]).astype("int32"))
+        output = starr.view(np.ndarray)
         self.assertTrue(isinstance(output, np.ndarray))
         self.assertFalse(isinstance(output, SumTreeArray))
-        self.assertTrue(np.shares_memory(sumtree_array, output))
+        self.assertTrue(np.shares_memory(starr, output))
         self.assertFalse(output.flags["WRITEABLE"])
 
     def test_fill(self):
-        sumtree_array = SumTreeArray(np.array([0, 1]).astype("int32"))
-        sumtree_array.fill(99)
-        self.assertEqual(sumtree_array[0], 99)
-        self.assertEqual(sumtree_array[1], 99)
-        self.assertEqual(sumtree_array._sumtree[1], 99 + 99)
+        starr = SumTreeArray(np.array([0, 1]).astype("int32"))
+        starr.fill(99)
+        self.assertEqual(starr[0], 99)
+        self.assertEqual(starr[1], 99)
+        self.assertEqual(starr._sumtree[1], 99 + 99)
 
     def test_reshape(self):
         x1 = SumTreeArray(np.array([0, 1, 2, 3]).astype("int32"))
@@ -524,16 +524,49 @@ class TestSumTreeArray(unittest.TestCase):
         self.assertEqual(np.max(np.abs(x1.mean(axis=1) - x2.mean(axis=1))), 0)
 
     def test_newbyteorder(self):
-        with self.assertRaises(NotImplementedError):
-            SumTreeArray(4).newbyteorder()
+        x = SumTreeArray(np.array([2, 3, 1, 0])).newbyteorder()
+        y = np.array([2, 3, 1, 0]).newbyteorder()
+        self.assertEqual(np.max(np.abs(x - y)), 0)
 
     def test_partition(self):
-        with self.assertRaises(NotImplementedError):
-            SumTreeArray(4).partition(2)
+        x = SumTreeArray(np.array([2, 3, 1, 0]))
+        y = np.array([2, 3, 1, 0])
+        x.partition(2)
+        y.partition(2)
+        self.assertEqual(np.max(np.abs(x - y)), 0)
 
     def test_put(self):
-        with self.assertRaises(NotImplementedError):
-            SumTreeArray(4).put(np.array([1, 2]), 3)
+        # [[0,1],
+        #  [2,3],
+        #  [4,5]]
+        x = SumTreeArray(np.array([0, 1, 2, 3, 4, 5]).astype("int32").reshape((3, 2)))
+        # normal array indexing
+        x.put(1, 10)
+        self.assertEqual(x[0, 0], 0)
+        self.assertEqual(x[0, 1], 1)
+        self.assertEqual(x[1, 0], 10)
+        self.assertEqual(x[1, 1], 10)
+        self.assertEqual(x[2, 0], 4)
+        self.assertEqual(x[2, 1], 5)
+        self.assertEqual(x._sumtree[1], 30)
+        # array of indexes
+        x.put((np.array([0, 1]), np.array([1, 0])), 20)
+        self.assertEqual(x[0, 0], 0)
+        self.assertEqual(x[0, 1], 20)
+        self.assertEqual(x[1, 0], 20)
+        self.assertEqual(x[1, 1], 10)
+        self.assertEqual(x[2, 0], 4)
+        self.assertEqual(x[2, 1], 5)
+        self.assertEqual(x._sumtree[1], 59)
+        # boolean indexing
+        x.put(np.array([True, False, True]), 30)
+        self.assertEqual(x[0, 0], 30)
+        self.assertEqual(x[0, 1], 30)
+        self.assertEqual(x[1, 0], 20)
+        self.assertEqual(x[1, 1], 10)
+        self.assertEqual(x[2, 0], 30)
+        self.assertEqual(x[2, 1], 30)
+        self.assertEqual(x._sumtree[1], 150)
 
     def test_real(self):
         x = SumTreeArray(np.array([0, 1]))

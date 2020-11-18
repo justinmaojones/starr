@@ -1,6 +1,6 @@
 import unittest
 import numpy as np
-from sumtree_array.experimental.slow import SumTree, MinTree
+from starr.experimental.slow import SumTree, MinTree
 
 
 class TestSumTree(unittest.TestCase):
