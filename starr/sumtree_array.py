@@ -24,9 +24,10 @@ class SumTreeArray(np.ndarray):
     for fast Categorical distribution sampling and fast sum operations,
     at the expense of slower write operations. Because ``SumTreeArray``
     is a subclass of ``numpy.ndarray``, it can be used just like a
-    ``numpy.ndarray``.  It also comes with three new methods: ``sample``,
-    ``get_prefix_sum_id``, and ``sumtree``.  It also overrides ``sum``.
-    All elements of a ``SumTreeArray`` must be non-negative (see below).
+    ``numpy.ndarray``. It also comes with three new methods: ``sample``,
+    ``get_prefix_sum_id``, and ``sumtree``.
+
+    All elements of ``SumTreeArray`` must be non-negative (explanation below).
 
     Parameters
     ----------
@@ -73,7 +74,7 @@ class SumTreeArray(np.ndarray):
     SumTreeArray([0, 0, 0, 0], dtype=int32)
     >>> SumTreeArray((2,2),dtype='int32')
     SumTreeArray([[0, 0],
-                   [0, 0]], dtype=int32)
+                  [0, 0]], dtype=int32)
     >>> sum_tree = SumTreeArray(np.array([1,2,3,4],dtype='float32'))
     >>> sum_tree
     SumTreeArray([1., 2., 3., 4.], dtype=float32)
@@ -268,7 +269,7 @@ class SumTreeArray(np.ndarray):
         >>> sum_tree_from_2d_array = SumTreeArray(np.array([[1,2],[3,4]],dtype='int32'))
         >>> sum_tree_from_2d_array
         SumTreeArray([[1., 2.],
-                       [3., 4.]], dtype=float32)
+                      [3., 4.]], dtype=float32)
         >>> sum_tree_from_2d_array.sumtree()
         array([ 0., 10.,  3.,  7.], dtype=float32)
         """
@@ -407,7 +408,7 @@ class SumTreeArray(np.ndarray):
         >>> sum_tree_from_2d_array = SumTreeArray(np.array([[1,2,3],[4,5,6]],dtype='int32'))
         >>> sum_tree_from_2d_array
         SumTreeArray([[1, 2, 3],
-                       [4, 5, 6]], dtype=int32)
+                      [4, 5, 6]], dtype=int32)
         >>> sum_tree_from_2d_array.sample(4)
         (array([1, 1, 1, 0]), array([1, 1, 2, 2]))
         >>> sum_tree_from_2d_array.sample(4,flatten_indices=True)
