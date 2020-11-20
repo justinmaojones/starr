@@ -1,11 +1,11 @@
-![Build](https://github.com/justinmaojones/cy_prefix_sum_tree/workflows/Build/badge.svg)
+![Build](https://github.com/justinmaojones/starr/workflows/Build/badge.svg)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Python](docs/badges/python.svg)
 ![Coverage](docs/badges/coverage.svg)
 
 # STArr
 
-Fast sum tree ops in Cython for NumPy arrays in Python.  Inspired by [Prioritized Experience Replay](https://arxiv.org/abs/1511.05952).
+Fast sum tree ops in Cython for NumPy arrays.  Inspired by [Prioritized Experience Replay](https://arxiv.org/abs/1511.05952).
 
 ## Installation
 
@@ -32,7 +32,7 @@ SumTreeArray([[1, 2, 3],
               [4, 5, 6]], dtype=int32)
 ```
 
-Set values like you normally would with `ndarray`
+Set values like you normally would
 ```python
 >>> sumtree_array[0] = 1
 >>> sumtree_array[1:2] = [2]
@@ -42,7 +42,7 @@ Set values like you normally would with `ndarray`
 SumTreeArray([1., 2., 3., 4.], dtype=float32)
 ```
 
-A `SumTreeArray` maintains an internal sum segment tree, which can be used for fast sum and sampling ops.
+A `SumTreeArray` maintains an internal sum tree, which can be used for fast sampling and sum ops.
 ```python
 >>> sumtree_array.sumtree()
 array([ 0., 10.,  3.,  7.], dtype=float32)
@@ -68,7 +68,7 @@ You can also sample indices from an n-dimensional `SumTreeArray`
 (array([1, 1, 0, 0]), array([0, 1, 1, 2]))
 ```
 
-Use the array's `sum` method to use the sumtree to calculate sums
+Use the array's `sum` method to use the sumtree to calculate sums (quickly)
 ```python
 >>> sumtree_array.sum()
 10.0
@@ -76,13 +76,13 @@ Use the array's `sum` method to use the sumtree to calculate sums
 
 ## Memory
 
-Arithmetic operations return a new `ndarray` (to avoid expensive tree initialization) 
+Arithmetic operations return `ndarray` (to avoid expensive tree initialization) 
 ```python
 >>> sumtree_array * 2
 array([ 2., 4., 6., 8.], dtype=float32)
 ```
 
-This is true for some get operations as well
+This is true for get operations as well
 ```python
 >>> sumtree_array[1:3]
 array([2., 3.], dtype=float32)
@@ -100,6 +100,8 @@ SumTreeArray([3., 5., 7., 9.], dtype=float32)
 ```
 
 ## Performance
+
+See [latest benchmarks](starr/experimental/README.md).
 
 Sampling indices is faster than normal sampling methods in `numpy`
 ```python
@@ -142,20 +144,12 @@ Set operations are much slower in `SumTreeArray` than in `ndarray`, because each
 ```python
 >>> x = SumTreeArray(np.ones(int(1e6)))
 
->>> # set only 
->>> %timeit x[-10:] = 2
-10.8 µs ± 525 ns per loop (mean ± std. dev. of 7 runs, 100000 loops each)
-
 >>> # set + sample 
 >>> %timeit x[-10:] = 2; x.sample(100)
 71.4 µs ± 3.71 µs per loop (mean ± std. dev. of 7 runs, 10000 loops each)
 
 >>> y = np.ones(int(1e6))
 >>> y_sum = y.sum() # let's assume we keep track of this efficiently
-
->>> # set only 
->>> %timeit y[-10:] = 2
-411 ns ± 28.5 ns per loop (mean ± std. dev. of 7 runs, 1000000 loops each)
 
 >>> # set + sample 
 >>> %timeit y[-10:] = 2; np.random.choice(len(y),size=100,p=y/y_sum)

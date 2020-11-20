@@ -110,14 +110,14 @@ if __name__ == "__main__":
 
     test_funcs = {
         "set %d values" % K: "test_set",
-        "priority-sample %d values" % S: "test_sample",
+        "sample %d indices" % S: "test_sample",
         "sum entire array": "test_sum",
     }
 
     class_names = [
         "NDArray",
         "SumTreeArray",
-        "CPlusPlus",
+        #"CPlusPlus",
         "PythonList",
     ]
 
