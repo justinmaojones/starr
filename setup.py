@@ -10,8 +10,9 @@ try:
 except IOError:
     extras_require = None
 
+
 def get_long_description():
-    # TODO: fix this hacky method of resolving relative links in pypi readme viewer 
+    # TODO: fix this hacky method of resolving relative links in pypi readme viewer
     README = open("README.md").read()
     base_url = "https://github.com/justinmaojones/starr/blob/master/"
     relative_links = [
@@ -19,9 +20,10 @@ def get_long_description():
         "docs/badges/coverage.svg",
     ]
     for rlink in relative_links:
-        abs_link = base_url + rlink 
+        abs_link = base_url + rlink
         README = README.replace(rlink, abs_link)
     return README
+
 
 setup(
     name="starr",
