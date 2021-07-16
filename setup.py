@@ -10,7 +10,7 @@ try:
 except IOError:
     extras_require = None
 
-README = open("README.md").read() 
+README = open("README.md").read()
 
 setup(
     name="starr",
