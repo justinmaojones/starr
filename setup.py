@@ -14,7 +14,7 @@ README = open("README.md").read()
 
 setup(
     name="starr",
-    version="0.1",
+    version="0.1.0",
     description="Sumtrees for NumPy arrays",
     long_description=README,
     long_description_content_type="text/markdown",
