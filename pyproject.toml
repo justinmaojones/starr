@@ -1,3 +1,6 @@
 [build-system]
 requires = ["setuptools", "wheel", "Cython", "numpy"]
 build-backend = "setuptools.build_meta"
+
+[tool.coverage.run]
+relative_files = true
