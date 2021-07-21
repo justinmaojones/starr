@@ -21,7 +21,7 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         python -m pip install tox
-        tox -e py 
+        tox -e py -v 
 
     - name: Coveralls
       uses: AndreMiras/coveralls-python-action@develop
