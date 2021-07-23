@@ -1,7 +1,6 @@
 ![Build](https://github.com/justinmaojones/starr/workflows/Build/badge.svg)
 ![License](https://img.shields.io/badge/license-MIT-green)
-![Python](docs/badges/python.svg)
-![Coverage](docs/badges/coverage.svg)
+[![Coverage Status](https://coveralls.io/repos/github/justinmaojones/starr/badge.svg)](https://coveralls.io/github/justinmaojones/starr)
 
 # STArr
 
