@@ -51,11 +51,11 @@ jobs:
         python -m pip install --upgrade pip
         python -m pip install -e .[dev]
         coverage erase
-        coverage run --source=starr --omit=starr/experimental/* -m pytest test
+        coverage run --source=starr --omit=starr/experimental/* -m pytest tests
         coverage report
 
     - name: Coveralls
-      uses: AndreMiras/coveralls-python-action@develop
+      uses: AndreMiras/coveralls-python-action@master
       with:
         parallel: true
         flag-name: Unit Test
@@ -65,6 +65,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Coveralls Finished
-      uses: AndreMiras/coveralls-python-action@develop
+      uses: AndreMiras/coveralls-python-action@master
       with:
         parallel-finished: true
