@@ -32,7 +32,7 @@ jobs:
         python -m pip install tox
         tox -e py
 
-  test:
+  coveralls_run:
     runs-on: ubuntu-latest
     strategy:
       matrix:
