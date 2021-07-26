@@ -26,7 +26,7 @@ jobs:
         coverage report
 
     - name: Coveralls
-      uses: AndreMiras/coveralls-python-action@develop
+      uses: AndreMiras/coveralls-python-action@master
       with:
         parallel: true
         flag-name: Unit Test
@@ -36,6 +36,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Coveralls Finished
-      uses: AndreMiras/coveralls-python-action@develop
+      uses: AndreMiras/coveralls-python-action@master
       with:
         parallel-finished: true
