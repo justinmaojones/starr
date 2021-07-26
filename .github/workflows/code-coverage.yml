@@ -22,7 +22,7 @@ jobs:
         python -m pip install --upgrade pip
         python -m pip install -e .[dev]
         coverage erase
-        coverage run --source=starr --omit=starr/experimental/* -m pytest test
+        coverage run --source=starr --omit=starr/experimental/* -m pytest tests
         coverage report
 
     - name: Coveralls
