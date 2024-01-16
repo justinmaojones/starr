@@ -43,10 +43,10 @@ def update_sumtree(
         idx = idxs[i]
         diff = vals[i % nv] - array[idx]
         array[idx] += diff
-        idx = (idx + n) / 2 # index of parent in sumtree
+        idx = (idx + n) // 2 # index of parent in sumtree
         while idx > 0:
             sumtree[idx] += diff
-            idx -= idx - (idx / 2) # move to parent 
+            idx -= idx - (idx // 2) # move to parent 
 
 def build_sumtree_from_array(
             ARRAY_TYPE[:] array,

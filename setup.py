@@ -27,7 +27,7 @@ def get_long_description():
 
 setup(
     name="starr",
-    version="0.2.2",
+    version="0.3.1",
     description="Sumtrees for NumPy arrays",
     long_description=get_long_description(),
     long_description_content_type="text/markdown",
@@ -37,10 +37,6 @@ setup(
     license="MIT",
     classifiers=[
         "License :: OSI Approved :: MIT License",
-        "Programming Language :: Python :: 2",
-        "Programming Language :: Python :: 2.7",
-        "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
